@@ -2,7 +2,7 @@ import UIKit
 
 final class NetworkService {
     static let shared = NetworkService()
-    private let apiKey = "REDACTED-TMDB-API-KEY"
+    private let apiKey = "REDACTED-TMDB-API-KEYblablablable"
     private let baseURL = "https://api.themoviedb.org/3"
     
     func fetchMovies(completion: @escaping ([Movie]) -> Void) {
