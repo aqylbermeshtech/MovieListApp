@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  MovieListApp
 //
-//  Created by Amankeldi Zhetkergen on 17.03.2026.
+//  Created by Nurtore on 13.03.2026.
 //
 
 import UIKit

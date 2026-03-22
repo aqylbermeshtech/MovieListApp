@@ -13,7 +13,10 @@ final class ImageLoader {
 
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data, let image = UIImage(data: data) else {
-                completion(nil)
+                // Dispatch the failure completion to the main thread
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
                 return
             }
 
