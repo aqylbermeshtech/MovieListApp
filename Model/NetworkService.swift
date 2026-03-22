@@ -2,7 +2,7 @@ import UIKit
 
 final class NetworkService {
     static let shared = NetworkService()
-    private let apiKey = "4af65217d0f22d75f4471c4b7c462d32"
+    private let apiKey = "4af65217d0f22d75f4471c4b7c462d32blablablable"
     private let baseURL = "https://api.themoviedb.org/3"
     
     func fetchMovies(completion: @escaping ([Movie]) -> Void) {
