@@ -3,6 +3,9 @@ import UIKit
 final class MovieDetailViewModel {
     private let movie: Movie
     var onVideoUpdate: ((String?) -> Void)?
+    var onActorsUpdate: (() -> Void)?
+    
+    var actors : [Actor] = []
 
     init(movie: Movie) {
         self.movie = movie
@@ -17,6 +20,14 @@ final class MovieDetailViewModel {
     func fetchTrailer() {
         NetworkService.shared.fetchMovieVideo(for: movie.id) { [weak self] key in
             self?.onVideoUpdate?(key)
+        }
+    }
+    
+    func fetchActors() {
+        NetworkService.shared.fetchActors(for: movie.id) { [weak self] fetchedActors in
+            guard let self = self, let fetchedActors = fetchedActors else { return }
+            self.actors = fetchedActors
+            self.onActorsUpdate?()
         }
     }
 }
