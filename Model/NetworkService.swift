@@ -13,7 +13,9 @@ final class NetworkService {
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Error fetching movies: \(error)")
-                completion([])
+                DispatchQueue.main.async {
+                    completion([])
+                }
                 return
             }
             
@@ -50,15 +52,41 @@ final class NetworkService {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let result = try decoder.decode(VideoResponse.self, from: data)
-                // We filter for "Trailer" and "YouTube" specifically
-                let trailer = result.results.first { $0.site == "YouTube" && $0.type == "Trailer" }
-                
+                let trailer = result.results.first { $0.site == "YouTube" }
                 DispatchQueue.main.async {
                     completion(trailer?.key)
                 }
             } catch {
                 print("Video decoding error: \(error)")
                 completion(nil)
+            }
+        }.resume()
+    }
+    
+    func fetchActors(for id: Int, completion: @escaping ([Actor]?) -> Void) {
+        let urlString = "\(baseURL)/movie/\(id)/credits?api_key=\(apiKey)"
+        guard let url = URL(string: urlString) else {
+            completion(nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                completion(nil)
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let result = try decoder.decode(MovieCredits.self, from: data)
+                DispatchQueue.main.async {
+                    completion(result.cast)
+                }
+            } catch {
+                print("Decoding error: \(error)")
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
             }
         }.resume()
     }

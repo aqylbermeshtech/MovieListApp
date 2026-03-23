@@ -25,7 +25,6 @@ extension UIColor {
         self.init(red: r, green: g, blue: b, alpha: 1.0)
     }
 }
-
 extension UIColor {
     static let appDarkTeal    = UIColor(hex: "02394A")
     static let midnightViolet   = UIColor(hex: "1f0318")

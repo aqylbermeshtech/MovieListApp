@@ -55,16 +55,32 @@ final class MovieDetailViewController: UIViewController {
         webView.translatesAutoresizingMaskIntoConstraints = false
         return webView
     }()
+    
+    private let castCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 100, height: 150)
+        layout.minimumInteritemSpacing = 10
+        
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.showsHorizontalScrollIndicator = false
+        cv.backgroundColor = .clear
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        return cv
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         view.backgroundColor = .appDustyDenim
-
+        castCollectionView.delegate = self
+        castCollectionView.dataSource = self
+        castCollectionView.register(ActorsCell.self, forCellWithReuseIdentifier: ActorsCell.identifier)
         setupUI()
         configure()
-        bindViewModel() // 3. Bind the data
+        bindViewModel()
         viewModel.fetchTrailer()
+        viewModel.fetchActors()
     }
     private func configure() {
         titleLabel.text = viewModel.title
@@ -80,11 +96,18 @@ final class MovieDetailViewController: UIViewController {
     
     private func bindViewModel() {
         viewModel.onVideoUpdate = { [weak self] key in
-            guard let self = self, let videoKey = key else {
-                self?.videoPlayerView.isHidden = true // Hide if no trailer exists
-                return
+            guard let self = self else { return }
+            if let videoKey = key {
+                self.videoPlayerView.isHidden = false
+                self.loadYoutubeVideo(key: videoKey)
+            } else {
+                self.videoPlayerView.isHidden = true
             }
-            self.loadYoutubeVideo(key: videoKey)
+        }
+        viewModel.onActorsUpdate = { [weak self] in
+            DispatchQueue.main.async {
+                self?.castCollectionView.reloadData()
+            }
         }
     }
     
@@ -92,7 +115,6 @@ final class MovieDetailViewController: UIViewController {
         guard let url = URL(string: "https://www.youtube.com/embed/\(key)?autoplay=1&origin=https://www.themoviedb.org") else { return }
         videoPlayerView.load(URLRequest(url: url))
     }
-    
 
     private func setupUI() {
         imageView.contentMode = .scaleAspectFill
@@ -105,6 +127,7 @@ final class MovieDetailViewController: UIViewController {
             titleLabel,
             ratingLabel,
             descriptionLabel,
+            castCollectionView,
             videoPlayerView
         ])
         stack.axis = .vertical
@@ -129,8 +152,23 @@ final class MovieDetailViewController: UIViewController {
             stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32),
 
             imageView.heightAnchor.constraint(equalToConstant: 450),
-            videoPlayerView.heightAnchor.constraint(equalToConstant: 150)
+            videoPlayerView.heightAnchor.constraint(equalToConstant: 150),
+            castCollectionView.heightAnchor.constraint(equalToConstant: 160)
         ])
     }
 }
 
+extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return viewModel.actors.count
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ActorsCell.identifier, for: indexPath) as? ActorsCell else {
+            return UICollectionViewCell()
+        }
+        let actor = viewModel.actors[indexPath.item]
+        cell.configure(with: actor)
+        return cell
+    }
+}
