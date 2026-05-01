@@ -1,3 +1,10 @@
+//
+//  MovieDetailsViewController.swift
+//  MovieListApp
+//
+//  Created by Nurtore on 24.03.2026.
+//
+
 import UIKit
 import WebKit
 
@@ -29,6 +36,7 @@ final class MovieDetailViewController: UIViewController {
             let label = UILabel()
             label.font = .systemFont(ofSize: 28, weight: .bold)
             label.numberOfLines = 0
+            label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             return label
         }()
@@ -36,7 +44,7 @@ final class MovieDetailViewController: UIViewController {
         private let ratingLabel: UILabel = {
             let label = UILabel()
             label.font = .systemFont(ofSize: 18, weight: .medium)
-            label.textColor = .systemYellow
+            label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             return label
         }()
@@ -45,6 +53,7 @@ final class MovieDetailViewController: UIViewController {
             let label = UILabel()
             label.font = .systemFont(ofSize: 16, weight: .regular)
             label.numberOfLines = 0
+            label.textColor = .white
             label.translatesAutoresizingMaskIntoConstraints = false
             return label
         }()
@@ -61,7 +70,6 @@ final class MovieDetailViewController: UIViewController {
         layout.scrollDirection = .horizontal
         layout.itemSize = CGSize(width: 100, height: 150)
         layout.minimumInteritemSpacing = 10
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.showsHorizontalScrollIndicator = false
         cv.backgroundColor = .clear
@@ -72,7 +80,7 @@ final class MovieDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .appDustyDenim
+        view.backgroundColor = .graphite
         castCollectionView.delegate = self
         castCollectionView.dataSource = self
         castCollectionView.register(ActorsCell.self, forCellWithReuseIdentifier: ActorsCell.identifier)
@@ -112,8 +120,14 @@ final class MovieDetailViewController: UIViewController {
     }
     
     private func loadYoutubeVideo(key: String) {
-        guard let url = URL(string: "https://www.youtube.com/embed/\(key)?autoplay=1&origin=https://www.themoviedb.org") else { return }
-        videoPlayerView.load(URLRequest(url: url))
+        let urlString = "https://www.youtube.com/embed/\(key)?enablejsapi=1&origin=https://www.themoviedb.org"
+        
+        guard let url = URL(string: urlString) else { return }
+
+        var request = URLRequest(url: url)
+        request.setValue("https://www.themoviedb.org", forHTTPHeaderField: "Referer")
+        
+        videoPlayerView.load(request)
     }
 
     private func setupUI() {
@@ -169,6 +183,7 @@ extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewD
         }
         let actor = viewModel.actors[indexPath.item]
         cell.configure(with: actor)
+        
         return cell
     }
 }

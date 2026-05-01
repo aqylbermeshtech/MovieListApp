@@ -1,7 +1,14 @@
+//
+//  MovieListViewModel.swift
+//  MovieListApp
+//
+//  Created by Nurtore on 24.03.2026.
+//
+
 import Foundation
 
 final class MovieListViewModel {
-    private var movies: [Movie] = []
+    private(set) var movies: [Movie] = []
     var onUpdate: (() -> Void)?
 
     func fetchMovies() {

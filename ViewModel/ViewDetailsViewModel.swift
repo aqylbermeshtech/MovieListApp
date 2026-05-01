@@ -1,3 +1,10 @@
+//
+//  ViewDetailsViewModel.swift
+//  MovieListApp
+//
+//  Created by Nurtore on 24.03.2026.
+//
+
 import UIKit
 
 final class MovieDetailViewModel {
