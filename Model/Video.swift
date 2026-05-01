@@ -4,7 +4,8 @@
 //
 //  Created by Nurtore on 23.03.2026.
 //
-import UIKit
+
+import Foundation
 
 struct Video: Codable {
     let key: String

@@ -1,4 +1,11 @@
-import UIKit
+//
+//  Movie.swift
+//  MovieListApp
+//
+//  Created by Nurtore on 24.03.2026.
+//
+
+import Foundation
 
 struct Movie: Codable {
     let id:Int

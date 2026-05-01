@@ -24,6 +24,7 @@ class ActorsCell:UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .bold)
         label.textAlignment = .center
+        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -33,6 +34,7 @@ class ActorsCell:UICollectionViewCell {
         label.font = .systemFont(ofSize: 12, weight: .regular)
         label.textColor = .secondaryLabel
         label.textAlignment = .center
+        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -58,16 +60,28 @@ class ActorsCell:UICollectionViewCell {
             characterLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        profileImageView.image = nil
+        nameLabel.text = nil
+        characterLabel.text = nil
+    }
     
     required init?(coder: NSCoder) { fatalError() }
     
     func configure(with actor: Actor) {
         nameLabel.text = actor.name
         characterLabel.text = actor.character
+        
         if let url = actor.profileURL {
             ImageLoader.load(url: url) { [weak self] image in
-                self?.profileImageView.image = image
+                DispatchQueue.main.async {
+                    self?.profileImageView.image = image
+                }
             }
+        } else {
+            profileImageView.image = UIImage(systemName: "person.fill")
+            profileImageView.tintColor = .systemGray3
         }
     }
 }
