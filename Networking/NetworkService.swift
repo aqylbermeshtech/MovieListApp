@@ -9,7 +9,7 @@ import Foundation
 
 
 struct MovieResponse: Codable {
-    let results: [Movie]
+    let results: [Media]
 }
 
 struct VideoResponse: Codable {
@@ -21,53 +21,28 @@ final class NetworkService {
     private let apiKey = "4af65217d0f22d75f4471c4b7c462d32"
     private let baseURL = "https://api.themoviedb.org/3"
     
-    func fetchMovies(completion: @escaping ([Movie]) -> Void) {
-        let urlString = "\(baseURL)/trending/movie/day?api_key=\(apiKey)"
-
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL")
-            completion([])
-            return
+    func fetchTrendingContent(type: ContentType, completion: @escaping ([Media]) -> Void) {
+        let endpoint: String
+        
+        switch type {
+        case .movies:
+            endpoint = "/trending/movie/day"
+        case .tvSeries:
+            endpoint = "/trending/tv/day"
+        case .anime:
+            // Для аниме используем discover и фильтр по жанру "Animation" (16) + регион Япония
+            endpoint = "/discover/tv?with_genres=16&with_original_language=ja"
         }
-
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                print("Network error: \(error.localizedDescription)")
-                DispatchQueue.main.async { completion([]) }
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200...299).contains(httpResponse.statusCode) else {
-                print("Server error status code")
-                DispatchQueue.main.async { completion([]) }
-                return
-            }
-
-            guard let data = data else {
-                DispatchQueue.main.async { completion([]) }
-                return
-            }
-
-            do {
-                let decoder = JSONDecoder()
-                decoder.keyDecodingStrategy = .convertFromSnakeCase
-                let result = try decoder.decode(MovieResponse.self, from: data)
-                
-                let limitedResults = Array(result.results.prefix(9))
-                
-                DispatchQueue.main.async {
-                    completion(limitedResults)
-                }
-            } catch {
-                DispatchQueue.main.async { completion([]) }
-            }
-        }.resume()
+        
+        let urlString = "\(baseURL)\(endpoint)\(endpoint.contains("?") ? "&" : "?")api_key=\(apiKey)"
+        
+        performRequest(urlString: urlString) { (result: MovieResponse?) in
+            completion(result?.results ?? [])
+        }
     }
-    
-    func fetchMovieVideo(for id: Int, completion: @escaping (String?) -> Void) {
-        let urlString = "\(baseURL)/movie/\(id)/videos?api_key=\(apiKey)"
+
+    private func performRequest<T: Decodable>(urlString: String, completion: @escaping (T?) -> Void) {
         guard let url = URL(string: urlString) else {
-            print("Invalid URL")
             completion(nil)
             return
         }
@@ -75,12 +50,47 @@ final class NetworkService {
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Network error: \(error.localizedDescription)")
-                completion(nil)
+                DispatchQueue.main.async { completion(nil) }
                 return
             }
             
             guard let data = data else {
-                completion(nil)
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
+                let result = try decoder.decode(T.self, from: data)
+                DispatchQueue.main.async { completion(result) }
+            } catch {
+                print("Decoding error: \(error)")
+                DispatchQueue.main.async { completion(nil) }
+            }
+        }.resume()
+    }
+
+    func fetchVideo(for id: Int, isTV: Bool, completion: @escaping (String?) -> Void) {
+        let category = isTV ? "tv" : "movie"
+        let urlString = "\(baseURL)/\(category)/\(id)/videos?api_key=\(apiKey)"
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            completion(nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            // Обработка сетевых ошибок
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            
+            guard let data = data else {
+                DispatchQueue.main.async { completion(nil) }
                 return
             }
             
@@ -88,7 +98,7 @@ final class NetworkService {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let result = try decoder.decode(VideoResponse.self, from: data)
-                
+
                 let trailer = result.results.first { $0.site == "YouTube" && $0.type == "Trailer" }
                              ?? result.results.first { $0.site == "YouTube" }
                 
@@ -96,7 +106,8 @@ final class NetworkService {
                     completion(trailer?.key)
                 }
             } catch {
-                completion(nil)
+                print("Decoding error: \(error)")
+                DispatchQueue.main.async { completion(nil) }
             }
         }.resume()
     }
@@ -128,7 +139,7 @@ final class NetworkService {
             }
         }.resume()
     }
-    func searchMovies(query: String, completion: @escaping ([Movie]) -> Void) {
+    func searchMovies(query: String, completion: @escaping ([Media]) -> Void) {
         let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encoded)"
         guard let url = URL(string: urlString) else { return }
