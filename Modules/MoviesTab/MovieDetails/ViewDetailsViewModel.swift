@@ -38,7 +38,9 @@ final class MovieDetailViewModel {
     }
     
     func fetchActors() {
-        NetworkService.shared.fetchActors(for: media.id) { [weak self] fetchedActors in
+        let isTV = media.name != nil
+        
+        NetworkService.shared.fetchActors(for: media.id, isTV: isTV) { [weak self] fetchedActors in
             guard let self = self, let fetchedActors = fetchedActors else { return }
             self.actors = fetchedActors
             self.onActorsUpdate?()

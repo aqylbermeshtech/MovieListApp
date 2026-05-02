@@ -7,11 +7,16 @@
 
 import UIKit
 
-final class TrendingMoviesGridView: UIView {
+final class TrendingMediaGridView: UIView {
     
     var onMovieSelected: ((Media) -> Void)?
+    var onArticleSelected: ((Article) -> Void)?
+    
+    // MARK: - Состояние и Данные
     private var movies: [Media] = []
-
+    private var articles: [Article] = []
+    private var isShowingArticles: Bool = false
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Trending Movies"
@@ -25,15 +30,14 @@ final class TrendingMoviesGridView: UIView {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         
-        layout.minimumInteritemSpacing = 10
-
-        layout.minimumLineSpacing = 15
-        layout.sectionInset = .zero
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        
+        // РЕГИСТРАЦИЯ ЯЧЕЕК
         cv.register(MediaCell.self, forCellWithReuseIdentifier: MediaCell.identifier)
+        cv.register(ArticlesCell.self, forCellWithReuseIdentifier: "ArticleCell")
+        
         cv.backgroundColor = .clear
-        cv.isScrollEnabled = false
+        cv.isScrollEnabled = true
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
@@ -48,15 +52,6 @@ final class TrendingMoviesGridView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-
-    func update(with movies: [Media]) {
-        self.movies = movies
-        DispatchQueue.main.async {
-            self.layoutIfNeeded()
-            self.collectionView.reloadData()
-        }
-    }
-
     private func setupUI() {
         addSubview(titleLabel)
         addSubview(collectionView)
@@ -67,50 +62,79 @@ final class TrendingMoviesGridView: UIView {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            
             collectionView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
+    
+    // MARK: - Методы обновления данных
+    
+    func update(with movies: [Media]) {
+        self.isShowingArticles = false
+        self.movies = movies
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+    }
+
+    func updateArticles(with articles: [Article]) {
+        self.isShowingArticles = true
+        self.articles = articles
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }
+    }
+    
+    func setSectionTitle(_ title: String) {
+        UIView.transition(with: titleLabel, duration: 0.25, options: .transitionCrossDissolve, animations: {
+            self.titleLabel.text = title
+        }, completion: nil)
+    }
 }
 
-
-extension TrendingMoviesGridView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+// MARK: - DataSource & Delegate
+extension TrendingMediaGridView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return min(movies.count, 9)
+        return isShowingArticles ? articles.count : min(movies.count, 9)
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MediaCell.identifier, for: indexPath) as! MediaCell
-        cell.configure(with: movies[indexPath.item])
-        return cell
+        if isShowingArticles {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ArticleCell", for: indexPath) as! ArticlesCell
+            let article = articles[indexPath.item]
+            cell.configure(with: article)
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MediaCell.identifier, for: indexPath) as! MediaCell
+            let media = movies[indexPath.item]
+            cell.configure(with: media)
+            return cell
+        }
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
-        let numberOfColumns: CGFloat = 3
-        let spacingBetweenCells: CGFloat = 10
-
         let totalWidth = collectionView.frame.width
-        var widthToCalculate: CGFloat = totalWidth
         
-        if totalWidth <= 0 {
-            if let windowScene = self.window?.windowScene {
-                widthToCalculate = windowScene.screen.bounds.width - 20
-            } else {
-                widthToCalculate = 375
-            }
+        if isShowingArticles {
+            return CGSize(width: totalWidth, height: 380)
+        } else {
+            let numberOfColumns: CGFloat = 3
+            let spacing: CGFloat = 10
+            let itemWidth = (totalWidth - (numberOfColumns - 1) * spacing) / numberOfColumns
+            return CGSize(width: floor(itemWidth), height: floor(itemWidth * 1.5))
         }
-        
-        let totalSpacing = (numberOfColumns - 1) * spacingBetweenCells
-        let itemWidth = (widthToCalculate - totalSpacing) / numberOfColumns
-        
-        return CGSize(width: floor(itemWidth), height: floor(itemWidth * 1.5))
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        onMovieSelected?(movies[indexPath.item])
+        if isShowingArticles {
+            onArticleSelected?(articles[indexPath.item])
+        } else {
+            onMovieSelected?(movies[indexPath.item])
+        }
     }
 }

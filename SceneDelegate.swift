@@ -21,13 +21,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             
         let window = UIWindow(windowScene: windowScene)
             
-        let movieListVC = MovieListViewController()
-        movieListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)
+        let mediaListVC = MediaListViewController()
+        mediaListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)
         
         let searchMoviesVC = SearchMoviesController()
         searchMoviesVC.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 1)
         
-        let movieListNav = UINavigationController(rootViewController: movieListVC)
+        let movieListNav = UINavigationController(rootViewController: mediaListVC)
         let searchMoviesNav = UINavigationController(rootViewController: searchMoviesVC)
         let tabBar = UITabBarController()
         tabBar.viewControllers = [movieListNav, searchMoviesNav]

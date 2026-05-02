@@ -16,12 +16,19 @@ struct VideoResponse: Codable {
     let results: [Video]
 }
 
+enum TrendingResult {
+    case media([Media])
+    case articles([Article])
+}
+
 final class NetworkService {
     static let shared = NetworkService()
     private let apiKey = "4af65217d0f22d75f4471c4b7c462d32"
     private let baseURL = "https://api.themoviedb.org/3"
+    private let guardianBaseURL = "https://content.guardianapis.com"
+    private let guardianApiKey = "4a65ce32-1ae0-4d48-9ff5-62a45255511d"
     
-    func fetchTrendingContent(type: ContentType, completion: @escaping ([Media]) -> Void) {
+    func fetchTrendingContent(type: ContentType, completion: @escaping (TrendingResult) -> Void) {
         let endpoint: String
         
         switch type {
@@ -29,15 +36,17 @@ final class NetworkService {
             endpoint = "/trending/movie/day"
         case .tvSeries:
             endpoint = "/trending/tv/day"
-        case .anime:
-            // Для аниме используем discover и фильтр по жанру "Animation" (16) + регион Япония
-            endpoint = "/discover/tv?with_genres=16&with_original_language=ja"
+        case .articles:
+            fetchArticles { articles in
+                completion(.articles(articles ?? []))
+            }
+            return
         }
-        
+
         let urlString = "\(baseURL)\(endpoint)\(endpoint.contains("?") ? "&" : "?")api_key=\(apiKey)"
         
         performRequest(urlString: urlString) { (result: MovieResponse?) in
-            completion(result?.results ?? [])
+            completion(.media(result?.results ?? []))
         }
     }
 
@@ -82,7 +91,6 @@ final class NetworkService {
         }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
-            // Обработка сетевых ошибок
             if let error = error {
                 print("Network error: \(error.localizedDescription)")
                 DispatchQueue.main.async { completion(nil) }
@@ -112,27 +120,59 @@ final class NetworkService {
         }.resume()
     }
     
-    func fetchActors(for id: Int, completion: @escaping ([Actor]?) -> Void) {
-        let urlString = "\(baseURL)/movie/\(id)/credits?api_key=\(apiKey)"
+    func fetchActors(for id: Int, isTV: Bool, completion: @escaping ([Actor]?) -> Void) {
+        let type = isTV ? "tv" : "movie"
+        let urlString = "\(baseURL)/\(type)/\(id)/credits?api_key=\(apiKey)"
+        
         guard let url = URL(string: urlString) else {
             completion(nil)
             return
         }
+        
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 completion(nil)
                 return
             }
-
+            
             do {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let result = try decoder.decode(MovieCredits.self, from: data)
+                
                 DispatchQueue.main.async {
                     completion(result.cast)
                 }
             } catch {
-                print("Decoding error: \(error)")
+                print("Decoding error for \(type): \(error)")
+                DispatchQueue.main.async { completion(nil) }
+            }
+        }.resume()
+    }
+    func fetchArticles(completion: @escaping ([Article]?) -> Void) {
+        let urlString = "\(guardianBaseURL)/search?section=film&show-fields=thumbnail,trailText&api-key=\(guardianApiKey)"
+        
+        guard let url = URL(string: urlString) else {
+            completion(nil)
+            return
+        }
+        
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("Network error: \(String(describing: error))")
+                completion(nil)
+                return
+            }
+            
+            do {
+                let decoder = JSONDecoder()
+                let result = try decoder.decode(GuardianResponse.self, from: data)
+                
+                DispatchQueue.main.async {
+                    completion(result.response.results)
+                }
+            } catch {
+                print("Decoding error for Guardian: \(error)")
                 DispatchQueue.main.async {
                     completion(nil)
                 }
