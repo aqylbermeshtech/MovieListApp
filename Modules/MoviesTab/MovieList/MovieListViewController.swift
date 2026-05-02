@@ -7,10 +7,10 @@
 
 import UIKit
 
-final class MovieListViewController: UIViewController {
+final class MediaListViewController: UIViewController {
     
-    private let viewModel = MovieListViewModel()
-    private let trendingView = TrendingMoviesGridView()
+    private let viewModel = MediaListViewModel()
+    private let trendingView = TrendingMediaGridView()
     private let topSwitcher = TopSegmentedControlView()
 
     override func viewDidLoad() {
@@ -62,15 +62,34 @@ final class MovieListViewController: UIViewController {
             self?.navigationController?.pushViewController(detailVC, animated: true)
         }
         topSwitcher.onSegmentChanged = { [weak self] index in
-            guard let type = ContentType(rawValue: index) else { return }
-            self?.viewModel.fetchContent(type: type)
+            guard let self = self, let type = ContentType(rawValue: index) else { return }
+            switch type {
+            case .movies:
+                self.trendingView.setSectionTitle("Trending Movies")
+            case .tvSeries:
+                self.trendingView.setSectionTitle("Trending TV Shows")
+            case .articles:
+                self.trendingView.setSectionTitle("Latest Film News") 
+                
+                NetworkService.shared.fetchArticles { [weak self] fetchedArticles in
+                    guard let self = self, let articles = fetchedArticles else { return }
+                    self.trendingView.updateArticles(with: articles)
+                }
+            }
+
+            self.viewModel.fetchContent(type: type)
         }
     }
 
     private func bindViewModel() {
-        viewModel.onUpdate = { [weak self] in
+        viewModel.onUpdate = { [weak self] result in
             DispatchQueue.main.async {
-                self?.trendingView.update(with: self?.viewModel.content ?? [])
+                switch result {
+                case .media(let media):
+                    self?.trendingView.update(with: media)
+                case .articles(let articles):
+                    self?.trendingView.updateArticles(with: articles)
+                }
             }
         }
     }

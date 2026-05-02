@@ -12,13 +12,13 @@ final class TopSegmentedControlView: UIView {
     var onSegmentChanged: ((Int) -> Void)?
 
     private let segmentedControl: UISegmentedControl = {
-        let sc = UISegmentedControl(items: ["Movies", "TV Series", "Anime"])
+        let sc = UISegmentedControl(items: ["Movies", "TV Series", "Articles"])
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = .systemBlue
+        sc.selectedSegmentTintColor = .graphite
 
         let normalAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.gray,
-            .font: UIFont.systemFont(ofSize: 14, weight: .medium)
+            .foregroundColor: UIColor.systemBackground,
+            .font: UIFont.systemFont(ofSize: 14, weight: .bold)
         ]
         
         let selectedAttributes: [NSAttributedString.Key: Any] = [
@@ -49,7 +49,6 @@ final class TopSegmentedControlView: UIView {
         segmentedControl.addTarget(self, action: #selector(handleSegmentChange), for: .valueChanged)
         
         NSLayoutConstraint.activate([
-            // Привязываем контрол к краям нашей вью с небольшим отступом
             segmentedControl.topAnchor.constraint(equalTo: topAnchor),
             segmentedControl.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             segmentedControl.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
