@@ -32,6 +32,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let tabBar = UITabBarController()
         tabBar.viewControllers = [movieListNav, searchMoviesNav]
         
+
+        
         window.rootViewController = tabBar
         window.makeKeyAndVisible()
         self.window = window

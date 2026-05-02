@@ -1,5 +1,5 @@
 //
-//  TrendingGridView.swift
+//  TrendingMoviesGridView.swift
 //  MovieListApp
 //
 //  Created by Nurtore on 01.05.2026.
@@ -7,15 +7,14 @@
 
 import UIKit
 
-final class TrendingGridView: UIView {
+final class TrendingMoviesGridView: UIView {
     
-    var onMovieSelected: ((Movie) -> Void)?
-    private var movies: [Movie] = []
-    
-    // MARK: - UI Elements
+    var onMovieSelected: ((Media) -> Void)?
+    private var movies: [Media] = []
+
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Trending"
+        label.text = "Trending Movies"
         label.font = .systemFont(ofSize: 22, weight: .bold)
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -26,23 +25,22 @@ final class TrendingGridView: UIView {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         
-
         layout.minimumInteritemSpacing = 10
 
         layout.minimumLineSpacing = 15
         layout.sectionInset = .zero
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.register(MovieCell.self, forCellWithReuseIdentifier: MovieCell.identifier)
+        cv.register(MediaCell.self, forCellWithReuseIdentifier: MediaCell.identifier)
         cv.backgroundColor = .clear
         cv.isScrollEnabled = false
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
 
-    // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.backgroundColor = .graphite
         setupUI()
     }
 
@@ -50,8 +48,8 @@ final class TrendingGridView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    // MARK: - Public Methods
-    func update(with movies: [Movie]) {
+
+    func update(with movies: [Media]) {
         self.movies = movies
         DispatchQueue.main.async {
             self.layoutIfNeeded()
@@ -59,7 +57,6 @@ final class TrendingGridView: UIView {
         }
     }
 
-    // MARK: - Setup
     private func setupUI() {
         addSubview(titleLabel)
         addSubview(collectionView)
@@ -78,15 +75,15 @@ final class TrendingGridView: UIView {
     }
 }
 
-// MARK: - CollectionView Protocols
-extension TrendingGridView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
+
+extension TrendingMoviesGridView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return min(movies.count, 9)
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MovieCell.identifier, for: indexPath) as! MovieCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MediaCell.identifier, for: indexPath) as! MediaCell
         cell.configure(with: movies[indexPath.item])
         return cell
     }

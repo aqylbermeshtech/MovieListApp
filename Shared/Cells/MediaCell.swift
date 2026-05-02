@@ -7,8 +7,8 @@
 
 import UIKit
 
-final class MovieCell: UICollectionViewCell {
-    static let identifier = "MovieCell"
+final class MediaCell: UICollectionViewCell {
+    static let identifier = "MediaCell"
 
     private let imageView: UIImageView = {
         let iv = UIImageView()
@@ -65,10 +65,10 @@ final class MovieCell: UICollectionViewCell {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    func configure(with movie: Movie) {
-        titleLabel.text = movie.title
-        ratingLabel.text = String(format: "⭐️ %.1f", movie.voteAverage)
-        if let url = movie.fullPosterURL {
+    func configure(with media: Media) {
+        titleLabel.text = media.title
+        ratingLabel.text = String(format: "⭐️ %.1f", media.voteAverage)
+        if let url = media.fullPosterURL {
             ImageLoader.load(url: url) { [weak self] image in
                 DispatchQueue.main.async {
                     self?.imageView.image = image
