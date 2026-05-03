@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class MovieDetailViewModel {
+final class MediaDetailsViewModel {
     private let media: Media
     
     var onVideoUpdate: ((String?) -> Void)?

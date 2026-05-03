@@ -8,12 +8,12 @@
 import UIKit
 import WebKit
 
-final class MovieDetailViewController: UIViewController {
+final class MediaDetailsViewController: UIViewController {
 
-    private let viewModel: MovieDetailViewModel
+    private let viewModel: MediaDetailsViewModel
     private let scrollView = UIScrollView()
 
-    init(viewModel: MovieDetailViewModel) {
+    init(viewModel: MediaDetailsViewModel) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
@@ -23,46 +23,39 @@ final class MovieDetailViewController: UIViewController {
     }
 
     private let imageView: UIImageView = {
-            let iv = UIImageView()
-            iv.contentMode = .scaleAspectFill
-            iv.clipsToBounds = true
-            iv.layer.cornerRadius = 12
-            iv.backgroundColor = .systemGray6
-            iv.translatesAutoresizingMaskIntoConstraints = false
-            return iv
-        }()
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.layer.cornerRadius = 12
+        iv.backgroundColor = .systemGray6
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
 
-        private let titleLabel: UILabel = {
-            let label = UILabel()
-            label.font = .systemFont(ofSize: 28, weight: .bold)
-            label.numberOfLines = 0
-            label.textColor = .white
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
+    private let titleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 28, weight: .bold)
+        label.numberOfLines = 0
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
-        private let ratingLabel: UILabel = {
-            let label = UILabel()
-            label.font = .systemFont(ofSize: 18, weight: .medium)
-            label.textColor = .white
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
+    private let ratingLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
 
-        private let descriptionLabel: UILabel = {
-            let label = UILabel()
-            label.font = .systemFont(ofSize: 16, weight: .regular)
-            label.numberOfLines = 0
-            label.textColor = .white
-            label.translatesAutoresizingMaskIntoConstraints = false
-            return label
-        }()
-    
-    private let videoPlayerView: WKWebView = {
-        let webView = WKWebView()
-        webView.backgroundColor = .black
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        return webView
+    private let descriptionLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 16, weight: .regular)
+        label.numberOfLines = 0
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
     }()
     
     private let castCollectionView: UICollectionView = {
@@ -76,10 +69,26 @@ final class MovieDetailViewController: UIViewController {
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
     }()
-
+    
+    private let videoLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 22, weight: .semibold)
+        label.text = "Recommended to watch:"
+        label.numberOfLines = 0
+        label.textColor = .white
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    
+    private let videoPlayerView: WKWebView = {
+        let webView = WKWebView()
+        webView.backgroundColor = .black
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        return webView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
         view.backgroundColor = .graphite
         castCollectionView.delegate = self
         castCollectionView.dataSource = self
@@ -90,6 +99,7 @@ final class MovieDetailViewController: UIViewController {
         viewModel.fetchTrailer()
         viewModel.fetchActors()
     }
+    
     private func configure() {
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.overview
@@ -142,8 +152,10 @@ final class MovieDetailViewController: UIViewController {
             ratingLabel,
             descriptionLabel,
             castCollectionView,
+            videoLabel,
             videoPlayerView
         ])
+        
         stack.axis = .vertical
         stack.spacing = 20
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -172,7 +184,7 @@ final class MovieDetailViewController: UIViewController {
     }
 }
 
-extension MovieDetailViewController: UICollectionViewDelegate, UICollectionViewDataSource {
+extension MediaDetailsViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return viewModel.actors.count
     }
