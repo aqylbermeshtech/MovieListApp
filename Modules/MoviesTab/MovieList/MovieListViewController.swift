@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SafariServices
 
 final class MediaListViewController: UIViewController {
     
@@ -21,7 +22,7 @@ final class MediaListViewController: UIViewController {
         
         setupUI()
         bindViewModel()
-
+        
         viewModel.fetchContent(type: .movies)
     }
     
@@ -57,10 +58,18 @@ final class MediaListViewController: UIViewController {
             trendingView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         trendingView.onMovieSelected = { [weak self] media in
-            let detailVM = MovieDetailViewModel(media: media)
-            let detailVC = MovieDetailViewController(viewModel: detailVM)
+            let detailVM = MediaDetailsViewModel(media: media)
+            let detailVC = MediaDetailsViewController(viewModel: detailVM)
             self?.navigationController?.pushViewController(detailVC, animated: true)
         }
+        trendingView.onArticleSelected = { [weak self] article in
+            guard let url = URL(string: article.webUrl) else { return }
+
+                let safariVC = SFSafariViewController(url: url)
+                safariVC.preferredControlTintColor = .systemBlue 
+                self?.present(safariVC, animated: true)
+        }
+        
         topSwitcher.onSegmentChanged = { [weak self] index in
             guard let self = self, let type = ContentType(rawValue: index) else { return }
             switch type {
@@ -70,11 +79,6 @@ final class MediaListViewController: UIViewController {
                 self.trendingView.setSectionTitle("Trending TV Shows")
             case .articles:
                 self.trendingView.setSectionTitle("Latest Film News") 
-                
-                NetworkService.shared.fetchArticles { [weak self] fetchedArticles in
-                    guard let self = self, let articles = fetchedArticles else { return }
-                    self.trendingView.updateArticles(with: articles)
-                }
             }
 
             self.viewModel.fetchContent(type: type)
