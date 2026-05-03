@@ -2,6 +2,10 @@
 
 MovieListApp is an iOS application that allows users to browse trending movies, view detailed information, and explore related content using The Movie Database (TMDb) API.
 
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/582ec8a0-333b-414f-aa29-5a496b5dabf2" controls width="300"></video>
+</div>
+
 ## Features
 
 - Browse trending movies (daily)
