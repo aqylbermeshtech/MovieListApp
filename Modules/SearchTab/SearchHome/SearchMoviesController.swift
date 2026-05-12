@@ -11,6 +11,22 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     
     private let menuItems = ["Release date", "Genre, country or language", "Service", "Most popular", "Highest Rated", "Most anticipated", "Coming soon", "Featured lists", "Official lists"]
     
+    let searchController = UISearchController(searchResultsController: nil)
+    
+    private func setupNavigationBar() {
+        title = "Search"
+        navigationController?.navigationBar.prefersLargeTitles = false
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .black
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.tintColor = .white
+    }
+    
     
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -18,7 +34,6 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         label.text = "Browse by"
         label.textColor = .systemBackground
         label.numberOfLines = 0
-        label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -32,6 +47,8 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
 
     override func viewDidLoad() {
         view.backgroundColor = .black
+        setupSearchBar()
+        setupNavigationBar()
         super.viewDidLoad()
         setupUI()
     }
@@ -58,6 +75,12 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         ])
         
         tableView.backgroundColor = .clear
+    }
+    
+    private func setupSearchBar() {
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchBar.delegate = self
     }
 
     // MARK: - TableView Methods
@@ -90,4 +113,8 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
     }
+}
+
+extension SearchMoviesController: UISearchBarDelegate {
+    
 }
