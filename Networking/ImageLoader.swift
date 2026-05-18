@@ -1,26 +1,45 @@
+//
+//  ImageLoader.swift
+//  MovieListApp
+//
+//  Created by Nurtore on 24.03.2026.
+//
+
 import UIKit
 
 let imageCache = NSCache<NSString, UIImage>()
-
 final class ImageLoader {
-
     static func load(url: URL, completion: @escaping (UIImage?) -> Void) {
-
         if let cached = imageCache.object(forKey: url.absoluteString as NSString) {
             completion(cached)
             return
         }
-
         URLSession.shared.dataTask(with: url) { data, _, _ in
             guard let data = data, let image = UIImage(data: data) else {
-                completion(nil)
+                DispatchQueue.main.async {
+                    completion(nil)
+                }
                 return
             }
-
             imageCache.setObject(image, forKey: url.absoluteString as NSString)
-
             DispatchQueue.main.async {
                 completion(image)
+            }
+        }.resume()
+    }
+}
+
+extension UIImageView {
+    func loadImage(from url: URL) {
+        self.image = nil
+        
+        URLSession.shared.dataTask(with: url) { [weak self] data, response, error in
+            guard let data = data, error == nil, let image = UIImage(data: data) else {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self?.image = image
             }
         }.resume()
     }
