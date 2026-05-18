@@ -8,8 +8,16 @@
 import UIKit
 
 final class SearchMoviesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-    
-    private let menuItems = ["Release date", "Genre, country or language", "Service", "Most popular", "Highest Rated", "Most anticipated", "Coming soon", "Featured lists", "Official lists"]
+    private let sections: [(title: String, items: [String])] = [
+        (
+            title: "Browse by",
+            items: ["Release date", "Genre, country or language", "Service", "Most popular", "Highest Rated", "Most anticipated", "Coming soon", "Featured lists", "Official lists"]
+        ),
+        (
+            title: "MoviesApp",
+            items: ["New here?", "About Us", "Journal/Editorial", "Showdown Challenges", "Year in Review", "Contacts", "Social Accounts / Follow us", "Community Policy"]
+        )
+    ]
     
     let searchController = UISearchController(searchResultsController: nil)
     
@@ -27,20 +35,9 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         navigationController?.navigationBar.tintColor = .white
     }
     
-    
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 28, weight: .bold)
-        label.text = "Browse by"
-        label.textColor = .systemBackground
-        label.numberOfLines = 0
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-    
     private let tableView: UITableView = {
         let tv = UITableView(frame: .zero, style: .grouped)
-        tv.backgroundColor = .graphite
+        tv.backgroundColor = .clear
         tv.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         return tv
     }()
@@ -54,27 +51,19 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     }
 
     private func setupUI() {
-        view.addSubview(titleLabel)
         view.addSubview(tableView)
 
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
-
         tableView.delegate = self
         tableView.dataSource = self
         
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            
-            tableView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            // Прикрепляем таблицу прямо к safeArea, так как заголовки секций теперь внутри таблицы
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        tableView.backgroundColor = .clear
     }
     
     private func setupSearchBar() {
@@ -84,34 +73,51 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     }
 
     // MARK: - TableView Methods
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return sections.count
+    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return menuItems.count
+        return sections[section].items.count
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        return sections[section].title
+    }
+
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.textLabel?.font = .systemFont(ofSize: 22, weight: .bold)
+        header.textLabel?.textColor = .white
+
+        header.textLabel?.frame = header.bounds
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 
-        cell.textLabel?.text = menuItems[indexPath.row]
-        cell.textLabel?.textColor = .systemBackground
+        cell.textLabel?.text = sections[indexPath.section].items[indexPath.row]
+        cell.textLabel?.textColor = .white
         cell.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
 
         let chevronImage = UIImage(systemName: "chevron.right")
         let accessoryView = UIImageView(image: chevronImage)
-
-        accessoryView.tintColor = .systemBackground
+        accessoryView.tintColor = .lightGray
 
         cell.accessoryView = accessoryView
         
         let selectionView = UIView()
         selectionView.backgroundColor = UIColor(white: 0.2, alpha: 1.0)
         cell.selectedBackgroundView = selectionView
-        
+        //hello okdsksdfsf
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let selectedItem = sections[indexPath.section].items[indexPath.row]
     }
 }
 
