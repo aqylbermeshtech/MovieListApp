@@ -179,6 +179,48 @@ final class NetworkService {
             }
         }.resume()
     }
+    func fetchDiscoverMovies(category: String, value: String, page: Int, completion: @escaping ([Media]) -> Void) {
+        var endpoint = "/discover/movie?page=\(page)"
+        if category == "Release date" {
+            endpoint += "&primary_release_year=\(value)"
+        } else if category == "Genre, country or language" {
+            let genreId = getTMDBGenreId(for: value)
+            endpoint += "&with_genres=\(genreId)"
+        } else if category == "Service" {
+            let providerId = getProviderId(for: value)
+            endpoint += "&with_watch_providers=\(providerId)&watch_region=US"
+        }
+
+        let urlString = "\(baseURL)\(endpoint)&api_key=\(apiKey)&language=en-US"
+
+        performRequest(urlString: urlString) { (result: MovieResponse?) in
+            completion(result?.results ?? [])
+        }
+    }
+
+    private func getTMDBGenreId(for name: String) -> String {
+        switch name.lowercased() {
+        case "action": return "28"
+        case "comedy": return "35"
+        case "drama": return "18"
+        case "sci-fi": return "878"
+        case "thriller": return "53"
+        case "horror": return "27"
+        case "animation": return "16"
+        default: return ""
+        }
+    }
+
+    private func getProviderId(for name: String) -> String {
+        switch name.lowercased() {
+        case "netflix": return "8"
+        case "hbo max": return "384"
+        case "apple tv+": return "350"
+        case "disney+": return "337"
+        case "amazon prime": return "9"
+        default: return ""
+        }
+    }
     func searchMovies(query: String, completion: @escaping ([Media]) -> Void) {
         let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encoded)"

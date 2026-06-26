@@ -8,7 +8,6 @@
 import UIKit
 
 final class SearchMoviesController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
-    
     private let chevronImage = UIImage(systemName: "chevron.right")
     
     private let sections: [(title: String, items: [String])] = [
@@ -21,7 +20,6 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
             items: ["New here?", "About Us", "Journal/Editorial", "Showdown Challenges", "Year in Review", "Contacts", "Social Accounts / Follow us", "Community Policy"]
         )
     ]
-
     
     private func setupNavigationBar() {
         title = "Search"
@@ -69,10 +67,7 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
-    
-    // MARK: - TableView Methods
-    
+
     func numberOfSections(in tableView: UITableView) -> Int {
         return sections.count
     }
