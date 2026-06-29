@@ -7,20 +7,26 @@
 
 import UIKit
 
-final class SearchMoviesController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+final class SearchMoviesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
+    private let viewModel = SearchMoviesViewModel()
     private let chevronImage = UIImage(systemName: "chevron.right")
+    private let tableView: UITableView = {
+        let tv = UITableView(frame: .zero, style: .grouped)
+        tv.backgroundColor = .clear
+        tv.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tv.estimatedRowHeight = 44.0
+        tv.rowHeight = UITableView.automaticDimension
+        return tv
+    }()
     
-    private let sections: [(title: String, items: [String])] = [
-        (
-            title: "Browse by",
-            items: ["Release date", "Genre, country or language", "Service", "Most popular", "Highest Rated", "Most anticipated", "Coming soon", "Featured lists", "Official lists"]
-        ),
-        (
-            title: "MoviesApp",
-            items: ["New here?", "About Us", "Journal/Editorial", "Showdown Challenges", "Year in Review", "Contacts", "Social Accounts / Follow us", "Community Policy"]
-        )
-    ]
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .black
+        setupNavigationBar()
+        setupUI()
+    }
     
+    //MARK: - UI
     private func setupNavigationBar() {
         title = "Search"
         navigationController?.navigationBar.prefersLargeTitles = false
@@ -35,27 +41,8 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         navigationController?.navigationBar.tintColor = .white
     }
     
-    private let tableView: UITableView = {
-        let tv = UITableView(frame: .zero, style: .grouped)
-        tv.backgroundColor = .clear
-        tv.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-        
-        tv.estimatedRowHeight = 44.0
-        tv.rowHeight = UITableView.automaticDimension
-        
-        return tv
-    }()
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        view.backgroundColor = .black
-        setupNavigationBar()
-        setupUI()
-    }
-    
     private func setupUI() {
         view.addSubview(tableView)
-        
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
@@ -68,34 +55,30 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         ])
     }
 
+    // MARK: - UITableViewDataSource
     func numberOfSections(in tableView: UITableView) -> Int {
-        return sections.count
+        return viewModel.numberOfSections
     }
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return sections[section].items.count
+        return viewModel.numberOfRows(in: section)
     }
-    
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return sections[section].title
+        return viewModel.titleForHeader(in: section)
     }
-    
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         guard let header = view as? UITableViewHeaderFooterView else { return }
         header.textLabel?.font = .systemFont(ofSize: 22, weight: .bold)
         header.textLabel?.textColor = .white
     }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
-        cell.textLabel?.text = sections[indexPath.section].items[indexPath.row]
+        cell.textLabel?.text = viewModel.item(at: indexPath)
         cell.textLabel?.textColor = .white
         cell.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
         
         let accessoryView = UIImageView(image: chevronImage)
         accessoryView.tintColor = .lightGray
-        
         cell.accessoryView = accessoryView
         
         if cell.selectedBackgroundView == nil {
@@ -106,88 +89,20 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         return cell
     }
     
+    // MARK: - UITableViewDelegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
-        let selectedItem = sections[indexPath.section].items[indexPath.row]
-        
-        var subItems:[String] = []
-        
-        
-        switch selectedItem {
-        case "Release date":
-            subItems = ["2026", "2025", "2024", "2023", "2022", "2020s", "2010s", "2000s"]
-            
-        case "Genre, country or language":
-            subItems = ["Action", "Comedy", "Drama", "Sci-Fi", "Thriller", "Horror", "Animation"]
-            
-        case "Service":
-            subItems = ["Netflix", "HBO Max", "Apple TV+", "Disney+", "Amazon Prime"]
-            
-        case "Most popular":
-            subItems = ["Popular Today", "Popular This Week", "All Time Popular"]
-            
-        case "Highest Rated":
-            subItems = ["Top 250 Movies", "Top IMDb", "Critically Acclaimed"]
-            
-        case "Most anticipated":
-            subItems = ["Coming This Month", "Most Hyped 2026", "Trending Preorders"]
-            
-        case "Coming soon":
-            subItems = ["Theaters This Friday", "Streaming Next Week", "Announced Projects"]
-            
-        case "Featured lists":
-            subItems = ["Oscar Winners", "Cannes Festival", "Best of Marvel", "Christopher Nolan Collection"]
-            
-        case "Official lists":
-            subItems = ["TMDB Top Rated", "Letterboxd Top 250", "App Users Choice"]
-            
-        case "New here?":
-            print("Открыть экран-приветствие или онбординг")
-            // На будущее:
-            // let welcomeVC = WelcomeViewController()
-            // navigationController?.pushViewController(welcomeVC, animated: true)
-            return
-            
-        case "About Us":
-            print("Открыть экран с информацией о команде")
-            return
-            
-        case "Journal/Editorial":
-            print("Открыть блог или статьи редакции")
-            return
-            
-        case "Showdown Challenges":
-            print("Открыть игровой режим / челленджи приложения")
-            return
-            
-        case "Year in Review":
-            print("Открыть итоги года для пользователя")
-            return
-            
-        case "Contacts":
-            print("Открыть экран обратной связи")
-            return
-            
-        case "Social Accounts / Follow us":
-            print("Открыть ссылки на Telegram / Instagram приложения")
-            return
-            
-        case "Community Policy":
-            print("Открыть документ с правилами сообщества")
-            return
-            
-        default:
-            break
-        }
-        
-        if !subItems.isEmpty {
-            let subCategoryVC = SubcategoryViewController(title: selectedItem, items: subItems)
+
+        guard let target = viewModel.handleSelection(at: indexPath) else { return }
+
+        switch target {
+        case .subcategory(let title, let items):
+            let subCategoryVC = SubcategoryViewController(title: title, items: items)
             navigationController?.pushViewController(subCategoryVC, animated: true)
-        } else {
-            print("Конечная точка: \(selectedItem)")
+            
+        case .infoAction(let title, let description):
+            print("Лог действия [\(title)]: \(description)")
+
         }
     }
 }
-
-

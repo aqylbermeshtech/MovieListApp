@@ -8,15 +8,11 @@
 import UIKit
 
 final class TrendingMediaGridView: UIView {
-    
     var onMovieSelected: ((Media) -> Void)?
     var onArticleSelected: ((Article) -> Void)?
-    
-    // MARK: - Состояние и Данные
     private var movies: [Media] = []
     private var articles: [Article] = []
     private var isShowingArticles: Bool = false
-    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "Trending Movies"
@@ -29,13 +25,9 @@ final class TrendingMediaGridView: UIView {
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        
-        // РЕГИСТРАЦИЯ ЯЧЕЕК
         cv.register(MediaCell.self, forCellWithReuseIdentifier: MediaCell.identifier)
         cv.register(ArticlesCell.self, forCellWithReuseIdentifier: "ArticleCell")
-        
         cv.backgroundColor = .clear
         cv.isScrollEnabled = true
         cv.translatesAutoresizingMaskIntoConstraints = false
@@ -55,23 +47,18 @@ final class TrendingMediaGridView: UIView {
     private func setupUI() {
         addSubview(titleLabel)
         addSubview(collectionView)
-        
         collectionView.delegate = self
         collectionView.dataSource = self
-
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 10),
             titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            
             collectionView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
-    
-    // MARK: - Методы обновления данных
-    
+
     func update(with movies: [Media]) {
         self.isShowingArticles = false
         self.movies = movies
@@ -95,13 +82,10 @@ final class TrendingMediaGridView: UIView {
     }
 }
 
-// MARK: - DataSource & Delegate
 extension TrendingMediaGridView: UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return isShowingArticles ? articles.count : min(movies.count, 9)
     }
-
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if isShowingArticles {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ArticleCell", for: indexPath) as! ArticlesCell
@@ -117,9 +101,7 @@ extension TrendingMediaGridView: UICollectionViewDataSource, UICollectionViewDel
     }
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        
         let totalWidth = collectionView.frame.width
-        
         if isShowingArticles {
             return CGSize(width: totalWidth, height: 380)
         } else {
