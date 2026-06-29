@@ -7,7 +7,7 @@
 
 import Foundation
 
-
+//MARK: - Struct
 struct MovieResponse: Codable {
     let results: [Media]
 }
@@ -30,7 +30,6 @@ final class NetworkService {
     
     func fetchTrendingContent(type: ContentType, completion: @escaping (TrendingResult) -> Void) {
         let endpoint: String
-        
         switch type {
         case .movies:
             endpoint = "/trending/movie/day"
@@ -42,9 +41,7 @@ final class NetworkService {
             }
             return
         }
-
         let urlString = "\(baseURL)\(endpoint)\(endpoint.contains("?") ? "&" : "?")api_key=\(apiKey)"
-        
         performRequest(urlString: urlString) { (result: MovieResponse?) in
             completion(.media(result?.results ?? []))
         }
@@ -55,19 +52,16 @@ final class NetworkService {
             completion(nil)
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Network error: \(error.localizedDescription)")
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
-            
             guard let data = data else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
-            
             do {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -83,25 +77,21 @@ final class NetworkService {
     func fetchVideo(for id: Int, isTV: Bool, completion: @escaping (String?) -> Void) {
         let category = isTV ? "tv" : "movie"
         let urlString = "\(baseURL)/\(category)/\(id)/videos?api_key=\(apiKey)"
-        
         guard let url = URL(string: urlString) else {
             print("Invalid URL")
             completion(nil)
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, response, error in
             if let error = error {
                 print("Network error: \(error.localizedDescription)")
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
-            
             guard let data = data else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
-            
             do {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -123,18 +113,15 @@ final class NetworkService {
     func fetchActors(for id: Int, isTV: Bool, completion: @escaping ([Actor]?) -> Void) {
         let type = isTV ? "tv" : "movie"
         let urlString = "\(baseURL)/\(type)/\(id)/credits?api_key=\(apiKey)"
-        
         guard let url = URL(string: urlString) else {
             completion(nil)
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 completion(nil)
                 return
             }
-            
             do {
                 let decoder = JSONDecoder()
                 decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -149,25 +136,22 @@ final class NetworkService {
             }
         }.resume()
     }
+    
     func fetchArticles(completion: @escaping ([Article]?) -> Void) {
         let urlString = "\(guardianBaseURL)/search?section=film&show-fields=thumbnail,trailText&api-key=\(guardianApiKey)"
-        
         guard let url = URL(string: urlString) else {
             completion(nil)
             return
         }
-        
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 print("Network error: \(String(describing: error))")
                 completion(nil)
                 return
             }
-            
             do {
                 let decoder = JSONDecoder()
                 let result = try decoder.decode(GuardianResponse.self, from: data)
-                
                 DispatchQueue.main.async {
                     completion(result.response.results)
                 }
@@ -179,6 +163,8 @@ final class NetworkService {
             }
         }.resume()
     }
+    
+    //TODO: Complete the logic of search
     func fetchDiscoverMovies(category: String, value: String, page: Int, completion: @escaping ([Media]) -> Void) {
         var endpoint = "/discover/movie?page=\(page)"
         if category == "Release date" {
@@ -190,9 +176,7 @@ final class NetworkService {
             let providerId = getProviderId(for: value)
             endpoint += "&with_watch_providers=\(providerId)&watch_region=US"
         }
-
         let urlString = "\(baseURL)\(endpoint)&api_key=\(apiKey)&language=en-US"
-
         performRequest(urlString: urlString) { (result: MovieResponse?) in
             completion(result?.results ?? [])
         }
@@ -221,11 +205,11 @@ final class NetworkService {
         default: return ""
         }
     }
+    
     func searchMovies(query: String, completion: @escaping ([Media]) -> Void) {
         let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encoded)"
         guard let url = URL(string: urlString) else { return }
-        
         URLSession.shared.dataTask(with: url) { data, _, error in
             guard let data = data, error == nil else {
                 DispatchQueue.main.async { completion([]) }

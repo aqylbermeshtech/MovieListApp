@@ -103,7 +103,7 @@ final class MediaDetailsViewController: UIViewController {
     private func configure() {
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.overview
-        ratingLabel.text = String(format: "%.1f ⭐", viewModel.voteAverage)
+        ratingLabel.text = viewModel.ratingText
         
         if let url = viewModel.imageURL {
             ImageLoader.load(url: url) { [weak self] image in
@@ -115,9 +115,9 @@ final class MediaDetailsViewController: UIViewController {
     private func bindViewModel() {
         viewModel.onVideoUpdate = { [weak self] key in
             guard let self = self else { return }
-            if let videoKey = key {
+            if let videoKey = key, let request = self.viewModel.youtubeRequest(for: videoKey) {
                 self.videoPlayerView.isHidden = false
-                self.loadYoutubeVideo(key: videoKey)
+                self.videoPlayerView.load(request)
             } else {
                 self.videoPlayerView.isHidden = true
             }
@@ -131,12 +131,9 @@ final class MediaDetailsViewController: UIViewController {
     
     private func loadYoutubeVideo(key: String) {
         let urlString = "https://www.youtube.com/embed/\(key)?enablejsapi=1&origin=https://www.themoviedb.org"
-        
         guard let url = URL(string: urlString) else { return }
-
         var request = URLRequest(url: url)
         request.setValue("https://www.themoviedb.org", forHTTPHeaderField: "Referer")
-        
         videoPlayerView.load(request)
     }
 
@@ -145,7 +142,6 @@ final class MediaDetailsViewController: UIViewController {
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 12
         imageView.translatesAutoresizingMaskIntoConstraints = false
-
         let stack = UIStackView(arrangedSubviews: [
             imageView,
             titleLabel,
@@ -163,7 +159,6 @@ final class MediaDetailsViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(stack)
-
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -188,14 +183,12 @@ extension MediaDetailsViewController: UICollectionViewDelegate, UICollectionView
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return viewModel.actors.count
     }
-
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ActorsCell.identifier, for: indexPath) as? ActorsCell else {
             return UICollectionViewCell()
         }
         let actor = viewModel.actors[indexPath.item]
         cell.configure(with: actor)
-        
         return cell
     }
 }

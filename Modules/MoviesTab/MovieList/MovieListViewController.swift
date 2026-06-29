@@ -9,20 +9,16 @@ import UIKit
 import SafariServices
 
 final class MediaListViewController: UIViewController {
-    
     private let viewModel = MediaListViewModel()
     private let trendingView = TrendingMediaGridView()
     private let topSwitcher = TopSegmentedControlView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setupNavigationBar()
         view.backgroundColor = .black
-        
         setupUI()
         bindViewModel()
-        
         viewModel.fetchContent(type: .movies)
     }
     
@@ -63,13 +59,11 @@ final class MediaListViewController: UIViewController {
             self?.navigationController?.pushViewController(detailVC, animated: true)
         }
         trendingView.onArticleSelected = { [weak self] article in
-            guard let url = URL(string: article.webUrl) else { return }
-
-                let safariVC = SFSafariViewController(url: url)
-                safariVC.preferredControlTintColor = .systemBlue 
-                self?.present(safariVC, animated: true)
+            guard let url = self?.viewModel.getUrl(for: article) else { return }
+            let safariVC = SFSafariViewController(url: url)
+            safariVC.preferredControlTintColor = .systemBlue
+            self?.present(safariVC, animated: true)
         }
-        
         topSwitcher.onSegmentChanged = { [weak self] index in
             guard let self = self, let type = ContentType(rawValue: index) else { return }
             switch type {
@@ -80,8 +74,8 @@ final class MediaListViewController: UIViewController {
             case .articles:
                 self.trendingView.setSectionTitle("Latest Film News") 
             }
-
             self.viewModel.fetchContent(type: type)
+            self.trendingView.setSectionTitle(self.viewModel.sectionTitle)
         }
     }
 
