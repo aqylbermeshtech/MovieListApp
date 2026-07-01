@@ -20,6 +20,13 @@ final class MediaListViewController: UIViewController {
         setupUI()
         bindViewModel()
         viewModel.fetchContent(type: .movies)
+        applyTheme()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(themeChanged),
+            name: ThemeManager.themeDidChangeNotification,
+            object: nil
+        )
     }
     
     private func setupNavigationBar() {
@@ -34,6 +41,13 @@ final class MediaListViewController: UIViewController {
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.tintColor = .white
+    }
+    
+    @objc private func themeChanged() {
+        // Обновляем UI в главном потоке
+        DispatchQueue.main.async {
+            self.applyTheme()
+        }
     }
     
     private func setupUI() {
@@ -77,6 +91,16 @@ final class MediaListViewController: UIViewController {
             self.viewModel.fetchContent(type: type)
             self.trendingView.setSectionTitle(self.viewModel.sectionTitle)
         }
+    }
+    
+    private func applyTheme() {
+        let theme = ThemeManager.shared.currentTheme
+        navigationController?.navigationBar.tintColor = theme.mainColor
+        topSwitcher.updateTheme(with: theme.mainColor)
+    }
+        
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func bindViewModel() {

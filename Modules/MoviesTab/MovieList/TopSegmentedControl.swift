@@ -52,4 +52,8 @@ final class TopSegmentedControlView: UIView {
     @objc private func handleSegmentChange() {
         onSegmentChanged?(segmentedControl.selectedSegmentIndex)
     }
+
+    func updateTheme(with color: UIColor) {
+        segmentedControl.selectedSegmentTintColor = color
+    }
 }
