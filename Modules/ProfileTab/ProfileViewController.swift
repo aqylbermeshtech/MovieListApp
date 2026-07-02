@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 final class ProfileViewController: UIViewController {
     private let viewModel = ProfileViewModel()
@@ -53,9 +54,9 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .black
         setupNavigationBar()
-        setupHeaderLayout()
         setupTableView()
         configureData()
+        setupHeaderLayout()
         bindViewModel()
     }
     
@@ -80,12 +81,26 @@ final class ProfileViewController: UIViewController {
                 print("Навигация: Открыть настройки уведомлений")
             case .privacyPolicy:
                 print("Навигация: Открыть Web-страницу с политикой")
-                
             case .changeTheme:
                 self.showThemeSelectionAlert()
-                
             case .logout:
-                print("Навигация: Сбросить rootViewController на LoginViewController")
+                do {
+                    try Auth.auth().signOut()
+                    DispatchQueue.main.async {
+                        let loginVC = LoginViewController()
+                        let loginNav = UINavigationController(rootViewController: loginVC)
+                        
+                        if let window = self.view.window {
+                            window.rootViewController = loginNav
+                            UIView.transition(with: window,
+                                              duration: 0.3,
+                                              options: .transitionCrossDissolve,
+                                              animations: nil)
+                        }
+                    }
+                } catch let signOutError as NSError {
+                    print("Ошибка при выходе из аккаунта: %@", signOutError)
+                }
             }
         }
     }
