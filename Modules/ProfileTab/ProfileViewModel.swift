@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 enum ProfileOptionType {
     case editProfile
@@ -22,8 +23,13 @@ struct ProfileOption {
 }
 
 final class ProfileViewModel {
-    let userName = "Nurtore"
-    let userEmail = "nurtore@moviesapp.com"
+    var userName: String {
+        let displayName = Auth.auth().currentUser?.displayName
+        return (displayName?.isEmpty == false) ? displayName! : "User"
+    }
+    var userEmail: String {
+        return Auth.auth().currentUser?.email ?? ""
+    }
     let avatarSystemName = "person.circle.fill"
 
     var onNavigationRequired: ((ProfileOptionType) -> Void)?
