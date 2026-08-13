@@ -32,10 +32,25 @@ final class AuthManager {
     func logIn(withUserRequest request: LoginUserRequest, completion: @escaping (Bool, Error?) -> Void) {
         Auth.auth().signIn(withEmail: request.email, password: request.password) { result, error in
             if let error = error {
-                completion(false, error)
+                completion(false, AuthManager.genericLoginError(from: error))
                 return
             }
             completion(true, nil)
+        }
+    }
+
+    // Collapses account-existence-revealing errors into one generic message so a failed
+    // login can't be used to enumerate which emails have registered accounts. Other errors
+    // (network failure, too many requests, disabled account, ...) pass through unchanged
+    // since they aren't enumeration risks and the distinct messaging is useful to the user.
+    private static func genericLoginError(from error: Error) -> Error {
+        let nsError = error as NSError
+        guard let code = AuthErrorCode(rawValue: nsError.code) else { return error }
+        switch code {
+        case .wrongPassword, .userNotFound, .invalidEmail, .invalidCredential:
+            return NSError(domain: nsError.domain, code: nsError.code, userInfo: [NSLocalizedDescriptionKey: "Invalid email or password."])
+        default:
+            return error
         }
     }
 }
