@@ -105,28 +105,12 @@ class LoginViewController: UIViewController {
         AuthManager.shared.logIn(withUserRequest: request) { [weak self] success, error in
             if success {
                 DispatchQueue.main.async {
-                    let mediaListVC = MediaListViewController()
-                    mediaListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)
-                    
-                    let searchMoviesVC = SearchMoviesController()
-                    searchMoviesVC.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "magnifyingglass"), tag: 1)
-                    
-                    let profileVC = ProfileViewController()
-                    profileVC.tabBarItem = UITabBarItem(title: "Profile", image: UIImage(systemName: "person"), tag: 2)
-                    
-                    let movieListNav = UINavigationController(rootViewController: mediaListVC)
-                    let searchMoviesNav = UINavigationController(rootViewController: searchMoviesVC)
-                    let profileNav = UINavigationController(rootViewController: profileVC)
-                    
-                    let tabBar = UITabBarController()
-                    tabBar.viewControllers = [movieListNav, searchMoviesNav, profileNav]
-
                     if let window = self?.view.window {
-                        window.rootViewController = tabBar
+                        window.rootViewController = MainTabBarFactory.makeTabBar()
                         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
                     }
                 }
-                
+
             } else if let error = error {
                 self?.showAlert(message: error.localizedDescription)
             }

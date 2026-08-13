@@ -123,11 +123,8 @@ class SignUpViewController: UIViewController {
         AuthManager.shared.signUp(withUserRequest: request) { [weak self] success, error in
             if success {
                 DispatchQueue.main.async {
-                    let homeVC = ProfileViewController()
-                    let nav = UINavigationController(rootViewController: homeVC)
-                    
                     if let window = self?.view.window {
-                        window.rootViewController = nav
+                        window.rootViewController = MainTabBarFactory.makeTabBar()
                         UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
                     }
                 }
