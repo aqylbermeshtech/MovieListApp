@@ -23,10 +23,21 @@ enum TrendingResult {
 
 final class NetworkService {
     static let shared = NetworkService()
-    private let apiKey = "REDACTED-TMDB-API-KEY"
     private let baseURL = "https://api.themoviedb.org/3"
     private let guardianBaseURL = "https://content.guardianapis.com"
-    private let guardianApiKey = "REDACTED-GUARDIAN-API-KEY"
+
+    // Injected at build time from Config/Secrets.xcconfig (gitignored, kept out of the app source
+    // tree) — see MovieListApp/Config/Secrets.xcconfig.example for setup instructions.
+    private let apiKey = NetworkService.infoPlistValue(for: "TMDB_API_KEY")
+    private let guardianApiKey = NetworkService.infoPlistValue(for: "GUARDIAN_API_KEY")
+
+    private static func infoPlistValue(for key: String) -> String {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String, !value.isEmpty else {
+            assertionFailure("Missing \(key) — copy MovieListApp/Config/Secrets.xcconfig.example to Config/Secrets.xcconfig (next to MovieListApp.xcodeproj) and fill in real values.")
+            return ""
+        }
+        return value
+    }
     
     func fetchTrendingContent(type: ContentType, completion: @escaping (TrendingResult) -> Void) {
         let endpoint: String

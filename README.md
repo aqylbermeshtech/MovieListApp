@@ -82,3 +82,17 @@ While building this project, I improved my skills in:
 
 ```bash
 git clone https://github.com/iblamenooo/MovieListApp.git
+```
+
+2. Add the two local-only files that are intentionally not committed (they hold secrets):
+
+   - **`Config/Secrets.xcconfig`** — create this file next to `MovieListApp.xcodeproj` (i.e. a
+     sibling of the `MovieListApp` and `MovieListApp.xcodeproj` folders, *not* inside either of
+     them) by copying `MovieListApp/Config/Secrets.xcconfig.example` and filling in your own
+     [TMDb](https://www.themoviedb.org/settings/api) and
+     [Guardian](https://open-platform.theguardian.com/access/) API keys.
+   - **`GoogleService-Info.plist`** — download this from the
+     [Firebase console](https://console.firebase.google.com/) for the `movielistapp-13a53`
+     project and place it in `MovieListApp/`.
+
+3. Open `MovieListApp.xcodeproj` in Xcode and run.
