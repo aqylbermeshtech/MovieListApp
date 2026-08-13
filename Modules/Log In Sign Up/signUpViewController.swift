@@ -45,7 +45,7 @@ class SignUpViewController: UIViewController {
         tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
         tf.textColor = .white
         tf.isSecureTextEntry = true
-        tf.textContentType = .oneTimeCode
+        tf.textContentType = .newPassword
         tf.autocorrectionType = .no
         tf.spellCheckingType = .no
         return tf
@@ -107,7 +107,17 @@ class SignUpViewController: UIViewController {
             showAlert(message: "Please fill in all fields.")
             return
         }
-        
+
+        guard email.isValidEmail else {
+            showAlert(message: "Please enter a valid email address.")
+            return
+        }
+
+        guard password.isStrongPassword else {
+            showAlert(message: "Password must be at least 8 characters and include both letters and numbers.")
+            return
+        }
+
         let request = RegisterUserRequest(username: username, email: email, password: password)
         
         AuthManager.shared.signUp(withUserRequest: request) { [weak self] success, error in

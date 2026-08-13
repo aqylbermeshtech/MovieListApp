@@ -94,7 +94,12 @@ class LoginViewController: UIViewController {
             showAlert(message: "Please fill in all fields.")
             return
         }
-        
+
+        guard email.isValidEmail else {
+            showAlert(message: "Please enter a valid email address.")
+            return
+        }
+
         let request = LoginUserRequest(email: email, password: password)
         
         AuthManager.shared.logIn(withUserRequest: request) { [weak self] success, error in
