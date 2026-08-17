@@ -73,7 +73,7 @@ final class MediaDetailsViewController: UIViewController {
     private let videoLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .semibold)
-        label.text = "Recommended to watch:"
+        label.text = "Trailer"
         label.numberOfLines = 0
         label.textColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -83,8 +83,58 @@ final class MediaDetailsViewController: UIViewController {
     private let videoPlayerView: WKWebView = {
         let webView = WKWebView()
         webView.backgroundColor = .black
+        webView.isOpaque = false
+        webView.scrollView.isScrollEnabled = false
+        webView.clipsToBounds = true
+        webView.layer.cornerRadius = 12
         webView.translatesAutoresizingMaskIntoConstraints = false
         return webView
+    }()
+
+    private let trailerPlaceholderView: UIView = {
+        let container = UIView()
+        container.backgroundColor = .graphiteSunken
+        container.layer.cornerRadius = 12
+        container.layer.borderWidth = 1
+        container.layer.borderColor = UIColor.alabasterGray.withAlphaComponent(0.16).cgColor
+        container.isHidden = true
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let symbol = UIImage(
+            systemName: "video.slash.fill",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 40, weight: .regular)
+        )
+        let iconView = UIImageView(image: symbol)
+        iconView.tintColor = .appDustyDenim
+        iconView.contentMode = .scaleAspectFit
+
+        let titleLabel = UILabel()
+        titleLabel.text = "No trailer yet"
+        titleLabel.font = .systemFont(ofSize: 19, weight: .semibold)
+        titleLabel.textColor = .alabasterGray
+
+        let subtitleLabel = UILabel()
+        subtitleLabel.text = "We’ll show it here as soon as one is available"
+        subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        subtitleLabel.textColor = .appDustyDenim
+        subtitleLabel.textAlignment = .center
+        subtitleLabel.numberOfLines = 0
+
+        let stack = UIStackView(arrangedSubviews: [iconView, titleLabel, subtitleLabel])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 6
+        stack.setCustomSpacing(16, after: iconView)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        container.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -24)
+        ])
+        return container
     }()
     
     override func viewDidLoad() {
@@ -117,9 +167,11 @@ final class MediaDetailsViewController: UIViewController {
             guard let self = self else { return }
             if let videoKey = key, let request = self.viewModel.youtubeRequest(for: videoKey) {
                 self.videoPlayerView.isHidden = false
+                self.trailerPlaceholderView.isHidden = true
                 self.videoPlayerView.load(request)
             } else {
                 self.videoPlayerView.isHidden = true
+                self.trailerPlaceholderView.isHidden = false
             }
         }
         viewModel.onActorsUpdate = { [weak self] in
@@ -149,7 +201,8 @@ final class MediaDetailsViewController: UIViewController {
             descriptionLabel,
             castCollectionView,
             videoLabel,
-            videoPlayerView
+            videoPlayerView,
+            trailerPlaceholderView
         ])
         
         stack.axis = .vertical
@@ -173,7 +226,8 @@ final class MediaDetailsViewController: UIViewController {
             stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32),
 
             imageView.heightAnchor.constraint(equalToConstant: 450),
-            videoPlayerView.heightAnchor.constraint(equalToConstant: 150),
+            videoPlayerView.heightAnchor.constraint(equalTo: videoPlayerView.widthAnchor, multiplier: 9.0 / 16.0),
+            trailerPlaceholderView.heightAnchor.constraint(equalTo: trailerPlaceholderView.widthAnchor, multiplier: 9.0 / 16.0),
             castCollectionView.heightAnchor.constraint(equalToConstant: 160)
         ])
     }
