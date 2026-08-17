@@ -41,7 +41,7 @@ final class MediaCell: UICollectionViewCell {
         imageView.image = nil
         imageView.contentMode = .scaleAspectFill
         titleLabel.text = nil
-        ratingLabel.text = nil
+        ratingLabel.attributedText = nil
     }
 
     override init(frame: CGRect) {
@@ -69,7 +69,11 @@ final class MediaCell: UICollectionViewCell {
 
     func configure(with media: Media) {
         titleLabel.text = media.displayName
-        ratingLabel.text = String(format: "⭐️ %.1f", media.voteAverage)
+        ratingLabel.attributedText = RatingFormatter.attributedRating(
+            media.voteAverage,
+            font: ratingLabel.font,
+            textColor: .white
+        )
         if let url = media.fullPosterURL {
             ImageLoader.load(url: url) { [weak self] image in
                 DispatchQueue.main.async {

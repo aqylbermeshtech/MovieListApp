@@ -153,7 +153,11 @@ final class MediaDetailsViewController: UIViewController {
     private func configure() {
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.overview
-        ratingLabel.text = viewModel.ratingText
+        ratingLabel.attributedText = RatingFormatter.attributedRating(
+            viewModel.voteAverage,
+            font: ratingLabel.font,
+            textColor: .white
+        )
         
         if let url = viewModel.imageURL {
             ImageLoader.load(url: url) { [weak self] image in

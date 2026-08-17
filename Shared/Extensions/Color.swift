@@ -30,6 +30,7 @@ extension UIColor {
     static let midnightViolet = UIColor(hex: "1f0318")
     static let graphite  =  UIColor(hex:"39393A")
     static let graphiteSunken  =  UIColor(hex: "2C2C2E")
+    static let appAmber  =  UIColor(hex: "F0A830")
     static let appDustyDenim  =  UIColor(hex: "748CAB")
     static let appTomato  =  UIColor(hex: "F15946")
     static let alabasterGray  =  UIColor(hex: "CFDBD5")
