@@ -245,4 +245,12 @@ extension MediaDetailsViewController: UICollectionViewDelegate, UICollectionView
         cell.configure(with: actor)
         return cell
     }
+
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard viewModel.actors.indices.contains(indexPath.item) else { return }
+        let actor = viewModel.actors[indexPath.item]
+        let actorVM = ActorViewModel(actorId: actor.id, name: actor.name)
+        let actorVC = ActorViewController(viewModel: actorVM)
+        navigationController?.pushViewController(actorVC, animated: true)
+    }
 }

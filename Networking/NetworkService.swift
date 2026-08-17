@@ -148,6 +148,18 @@ final class NetworkService {
         }.resume()
     }
     
+    func fetchPersonDetails(for id: Int, completion: @escaping (PersonDetails?) -> Void) {
+        let urlString = "\(baseURL)/person/\(id)?api_key=\(apiKey)&language=en-US"
+        performRequest(urlString: urlString, completion: completion)
+    }
+
+    func fetchPersonCredits(for id: Int, completion: @escaping ([PersonCredit]) -> Void) {
+        let urlString = "\(baseURL)/person/\(id)/combined_credits?api_key=\(apiKey)&language=en-US"
+        performRequest(urlString: urlString) { (result: PersonCreditsResponse?) in
+            completion(result?.cast ?? [])
+        }
+    }
+
     func fetchArticles(completion: @escaping ([Article]?) -> Void) {
         let urlString = "\(guardianBaseURL)/search?section=film&show-fields=thumbnail,trailText&api-key=\(guardianApiKey)"
         guard let url = URL(string: urlString) else {
