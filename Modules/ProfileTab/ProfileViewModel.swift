@@ -5,7 +5,7 @@
 //  Created by Nurtore on 01.07.2026.
 //
 
-import Foundation
+import UIKit
 import FirebaseAuth
 
 enum ProfileOptionType {
@@ -20,42 +20,96 @@ struct ProfileOption {
     let title: String
     let iconName: String
     let type: ProfileOptionType
+    /// Right-hand detail text, e.g. the theme currently selected.
+    var detail: String?
+}
+
+struct ProfileSection {
+    let header: String?
+    let options: [ProfileOption]
 }
 
 final class ProfileViewModel {
-    var userName: String {
-        let displayName = Auth.auth().currentUser?.displayName
-        return (displayName?.isEmpty == false) ? displayName! : "User"
-    }
-    var userEmail: String {
-        return Auth.auth().currentUser?.email ?? ""
-    }
-    let avatarSystemName = "person.circle.fill"
+
+    /// The app has no privacy policy of its own yet; this points at the data provider's.
+    /// Swap in your own URL when you publish one.
+    static let privacyPolicyURL = URL(string: "https://www.themoviedb.org/privacy-policy")!
 
     var onNavigationRequired: ((ProfileOptionType) -> Void)?
 
-    private let options: [ProfileOption] = [
-        ProfileOption(title: "Edit Profile", iconName: "gearshape", type: .editProfile),
-        ProfileOption(title: "Notifications", iconName: "bell", type: .notifications),
-        ProfileOption(title: "Privacy Policy", iconName: "lock.shield", type: .privacyPolicy),
-        ProfileOption(title: "App Theme", iconName: "paintbrush", type: .changeTheme),
-        ProfileOption(title: "Log Out", iconName: "arrow.left.square", type: .logout)
-    ]
+    private var user: User? { Auth.auth().currentUser }
 
-    var numberOfOptions: Int {
-        return options.count
-    }
-    
-    func option(at index: Int) -> ProfileOption {
-        return options[index]
+    // MARK: - Header
+
+    var userName: String {
+        let displayName = user?.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let displayName = displayName, !displayName.isEmpty { return displayName }
+        // Better than a generic "User": derive something recognisable from the address.
+        if let emailName = user?.email?.split(separator: "@").first { return String(emailName) }
+        return "Your Profile"
     }
 
-    func didSelectOption(at index: Int) {
-        let selectedOption = options[index]
-        onNavigationRequired?(selectedOption.type)
+    var userEmail: String { user?.email ?? "Not signed in" }
+
+    var avatarImage: UIImage {
+        InitialsAvatar.image(name: user?.displayName, email: user?.email, size: 200)
     }
-    
+
+    /// "Member since August 2026" — real account metadata rather than invented copy.
+    var memberSinceText: String? {
+        guard let created = user?.metadata.creationDate else { return nil }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLLL yyyy"
+        return "Member since \(formatter.string(from: created))"
+    }
+
+    // MARK: - Sections
+
+    private(set) var sections: [ProfileSection] = []
+
+    init() {
+        rebuildSections()
+    }
+
+    func rebuildSections() {
+        sections = [
+            ProfileSection(header: "ACCOUNT", options: [
+                ProfileOption(title: "Edit Profile", iconName: "person.crop.circle", type: .editProfile)
+            ]),
+            ProfileSection(header: "PREFERENCES", options: [
+                ProfileOption(title: "Notifications", iconName: "bell", type: .notifications),
+                ProfileOption(
+                    title: "App Theme",
+                    iconName: "paintbrush",
+                    type: .changeTheme,
+                    detail: ThemeManager.shared.currentTheme.displayName
+                )
+            ]),
+            ProfileSection(header: "ABOUT", options: [
+                ProfileOption(title: "Privacy Policy", iconName: "lock.shield", type: .privacyPolicy)
+            ]),
+            ProfileSection(header: nil, options: [
+                ProfileOption(title: "Log Out", iconName: "rectangle.portrait.and.arrow.right", type: .logout)
+            ])
+        ]
+    }
+
+    func option(at indexPath: IndexPath) -> ProfileOption? {
+        guard let section = sections[safe: indexPath.section] else { return nil }
+        return section.options[safe: indexPath.row]
+    }
+
+    func didSelectOption(at indexPath: IndexPath) {
+        guard let option = option(at: indexPath) else { return }
+        onNavigationRequired?(option.type)
+    }
+
     func changeTheme(to theme: AppTheme) {
         ThemeManager.shared.selectTheme(theme)
+        rebuildSections()
+    }
+
+    func signOut() throws {
+        try Auth.auth().signOut()
     }
 }

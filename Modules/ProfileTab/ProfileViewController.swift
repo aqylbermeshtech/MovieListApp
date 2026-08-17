@@ -6,22 +6,21 @@
 //
 
 import UIKit
-import FirebaseAuth
+import SafariServices
 
 final class ProfileViewController: UIViewController {
     private let viewModel = ProfileViewModel()
     private let headerView = UIView()
-    
+
     private let avatarImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
-        iv.tintColor = .systemGray4
         iv.clipsToBounds = true
         iv.layer.cornerRadius = 50
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
-    
+
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .bold)
@@ -30,18 +29,27 @@ final class ProfileViewController: UIViewController {
         label.numberOfLines = 1
         return label
     }()
-    
+
     private let emailLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .lightGray
+        label.textColor = .alabasterGray
         label.textAlignment = .center
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.8
         return label
     }()
-    
+
+    private let memberSinceLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 13, weight: .regular)
+        label.textColor = .appDustyDenim
+        label.textAlignment = .center
+        label.numberOfLines = 1
+        return label
+    }()
+
     private let tableView: UITableView = {
         let tv = UITableView(frame: .zero, style: .insetGrouped)
         tv.backgroundColor = .clear
@@ -52,99 +60,157 @@ final class ProfileViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .graphite
         setupNavigationBar()
         setupTableView()
         configureData()
         setupHeaderLayout()
         bindViewModel()
     }
-    
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Coming back from Edit Profile, the Firebase user has new values to show.
+        configureData()
+        viewModel.rebuildSections()
+        tableView.reloadData()
+    }
+
     private func setupNavigationBar() {
         title = "Profile"
         navigationController?.navigationBar.prefersLargeTitles = false
+
+        // Pin the bar to the app's own palette rather than the system's default grouped
+        // background, so it matches the graphite content underneath it.
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .graphite
+        appearance.shadowColor = .clear
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        navigationController?.navigationBar.tintColor = .white
     }
-    
+
     private func configureData() {
         nameLabel.text = viewModel.userName
         emailLabel.text = viewModel.userEmail
-        avatarImageView.image = UIImage(systemName: viewModel.avatarSystemName)
+        avatarImageView.image = viewModel.avatarImage
+
+        memberSinceLabel.text = viewModel.memberSinceText
+        memberSinceLabel.isHidden = viewModel.memberSinceText == nil
     }
-    
+
     private func bindViewModel() {
         viewModel.onNavigationRequired = { [weak self] type in
             guard let self = self else { return }
             switch type {
             case .editProfile:
-                print("Навигация: Открыть экран редактирования")
+                self.showEditProfile()
             case .notifications:
-                print("Навигация: Открыть настройки уведомлений")
+                self.navigationController?.pushViewController(
+                    NotificationSettingsViewController(), animated: true
+                )
             case .privacyPolicy:
-                print("Навигация: Открыть Web-страницу с политикой")
+                self.showPrivacyPolicy()
             case .changeTheme:
                 self.showThemeSelectionAlert()
             case .logout:
-                do {
-                    try Auth.auth().signOut()
-                    DispatchQueue.main.async {
-                        let loginVC = LoginViewController()
-                        let loginNav = UINavigationController(rootViewController: loginVC)
-                        
-                        if let window = self.view.window {
-                            window.rootViewController = loginNav
-                            UIView.transition(with: window,
-                                              duration: 0.3,
-                                              options: .transitionCrossDissolve,
-                                              animations: nil)
-                        }
-                    }
-                } catch let signOutError as NSError {
-                    print("Ошибка при выходе из аккаунта: %@", signOutError)
-                }
+                self.confirmLogout()
             }
         }
     }
-    
-    private func showThemeSelectionAlert() {
-        let alert = UIAlertController(title: "Select App Theme", message: "Choose your favorite accent color", preferredStyle: .actionSheet)
-        
-        let classicAction = UIAlertAction(title: "Classic Blue", style: .default) { [weak self] _ in
-            self?.viewModel.changeTheme(to: .classic)
+
+    private func showEditProfile() {
+        let editVC = EditProfileViewController()
+        editVC.onSave = { [weak self] in
+            self?.configureData()
         }
-        
-        let neonAction = UIAlertAction(title: "Neon Green", style: .default) { [weak self] _ in
-            self?.viewModel.changeTheme(to: .neon)
-        }
-        
-        let goldAction = UIAlertAction(title: "Dark Gold", style: .default) { [weak self] _ in
-            self?.viewModel.changeTheme(to: .darkGold)
-        }
-        
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
-        
-        alert.addAction(classicAction)
-        alert.addAction(neonAction)
-        alert.addAction(goldAction)
-        alert.addAction(cancelAction)
-        
-        if let popoverController = alert.popoverPresentationController {
-            popoverController.sourceView = self.view
-            popoverController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 0, height: 0)
-            popoverController.permittedArrowDirections = []
-        }
-        
+        navigationController?.pushViewController(editVC, animated: true)
+    }
+
+    private func showPrivacyPolicy() {
+        let safariVC = SFSafariViewController(url: ProfileViewModel.privacyPolicyURL)
+        safariVC.preferredControlTintColor = ThemeManager.shared.currentTheme.mainColor
+        present(safariVC, animated: true)
+    }
+
+    private func confirmLogout() {
+        // `.alert`, not `.actionSheet`: an action sheet presented as a centred popover
+        // drops its cancel action, leaving a destructive confirm with no visible way out.
+        let alert = UIAlertController(
+            title: "Log Out",
+            message: "You'll need to sign in again to get back to your profile.",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Log Out", style: .destructive) { [weak self] _ in
+            self?.performLogout()
+        })
         present(alert, animated: true)
     }
-    
+
+    private func performLogout() {
+        do {
+            try viewModel.signOut()
+        } catch {
+            presentAlert(title: "Couldn't log out", message: error.localizedDescription)
+            return
+        }
+
+        guard let window = view.window else { return }
+        let loginNav = UINavigationController(rootViewController: LoginViewController())
+        window.rootViewController = loginNav
+        UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: nil)
+    }
+
+    private func showThemeSelectionAlert() {
+        let alert = UIAlertController(
+            title: "Select App Theme",
+            message: "Choose your favorite accent color",
+            preferredStyle: .actionSheet
+        )
+
+        // The active theme is already shown as the row's detail text, so the sheet
+        // doesn't need a checkmark — which would mean poking a private UIAlertAction key.
+        for theme in [AppTheme.classic, .neon, .darkGold] {
+            alert.addAction(UIAlertAction(title: theme.displayName, style: .default) { [weak self] _ in
+                guard let self = self else { return }
+                self.viewModel.changeTheme(to: theme)
+                self.tableView.reloadData()
+            })
+        }
+
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        presentCentred(alert)
+    }
+
+    /// Action sheets need an anchor on iPad or they crash on presentation.
+    private func presentCentred(_ alert: UIAlertController) {
+        if let popover = alert.popoverPresentationController {
+            popover.sourceView = view
+            popover.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        present(alert, animated: true)
+    }
+
+    private func presentAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
+    }
+
     private func setupHeaderLayout() {
-        let infoStack = UIStackView(arrangedSubviews: [nameLabel, emailLabel])
+        let infoStack = UIStackView(arrangedSubviews: [nameLabel, emailLabel, memberSinceLabel])
         infoStack.axis = .vertical
         infoStack.spacing = 6
         infoStack.translatesAutoresizingMaskIntoConstraints = false
-        
+
         headerView.addSubview(avatarImageView)
         headerView.addSubview(infoStack)
-        
+
         NSLayoutConstraint.activate([
             avatarImageView.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 20),
             avatarImageView.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
@@ -161,16 +227,18 @@ final class ProfileViewController: UIViewController {
         let estimatedSize = headerView.systemLayoutSizeFitting(targetSize,
                                                                withHorizontalFittingPriority: .required,
                                                                verticalFittingPriority: .fittingSizeLevel)
-        
+
         headerView.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: estimatedSize.height)
         tableView.tableHeaderView = headerView
     }
-    
+
     private func setupTableView() {
         view.addSubview(tableView)
         tableView.delegate = self
         tableView.dataSource = self
-        
+        // Keeps the last row clear of the floating tab bar.
+        tableView.contentInsetAdjustmentBehavior = .always
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -181,25 +249,54 @@ final class ProfileViewController: UIViewController {
 }
 
 extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.numberOfOptions
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        viewModel.sections.count
     }
-    
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.sections[safe: section]?.options.count ?? 0
+    }
+
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        viewModel.sections[safe: section]?.header
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let option = viewModel.option(at: indexPath.row)
-        
-        cell.textLabel?.text = option.title
-        cell.imageView?.image = UIImage(systemName: option.iconName)
-        cell.textLabel?.textColor = option.type == .logout ? .systemRed : .white
-        cell.imageView?.tintColor = option.type == .logout ? .systemRed : .white
-        cell.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
-        cell.accessoryType = option.type == .logout ? .none : .disclosureIndicator
+        guard let option = viewModel.option(at: indexPath) else { return cell }
+
+        let isDestructive = option.type == .logout
+        let tint: UIColor = isDestructive ? .systemRed : .white
+
+        // `valueCell` right-aligns the secondary text (the current theme) and, unlike an
+        // accessoryView, leaves the disclosure chevron in place.
+        var content = option.detail == nil
+            ? cell.defaultContentConfiguration()
+            : UIListContentConfiguration.valueCell()
+        content.text = option.title
+        content.textProperties.color = tint
+        content.secondaryText = option.detail
+        content.secondaryTextProperties.color = .appDustyDenim
+        content.image = UIImage(systemName: option.iconName)
+        content.imageProperties.tintColor = tint
+        cell.contentConfiguration = content
+
+        cell.backgroundColor = .graphiteSunken
+        cell.accessoryType = isDestructive ? .none : .disclosureIndicator
+
         return cell
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        viewModel.didSelectOption(at: indexPath.row)
+        viewModel.didSelectOption(at: indexPath)
+    }
+
+    /// Grouped-table headers default to a dark grey that disappears against graphite.
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        guard let header = view as? UITableViewHeaderFooterView else { return }
+        header.textLabel?.textColor = .appDustyDenim
+        header.textLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
     }
 }

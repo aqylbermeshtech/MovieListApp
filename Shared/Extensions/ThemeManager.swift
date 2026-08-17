@@ -28,6 +28,14 @@ enum AppTheme: String {
         case .darkGold: return .darkGray
         }
     }
+
+    var displayName: String {
+        switch self {
+        case .classic: return "Classic Blue"
+        case .neon: return "Neon Green"
+        case .darkGold: return "Dark Gold"
+        }
+    }
 }
 
 // 2. Сам менеджер
@@ -52,8 +60,19 @@ final class ThemeManager {
     func selectTheme(_ theme: AppTheme) {
         self.currentTheme = theme
         UserDefaults.standard.set(theme.rawValue, forKey: themeKey)
-        
+        applyToConnectedScenes()
+
         // Оповещаем все живые экраны, что цвета изменились
         NotificationCenter.default.post(name: ThemeManager.themeDidChangeNotification, object: nil)
+    }
+
+    /// Tinting the window is what actually makes a theme visible: it cascades to the tab
+    /// bar selection, bar buttons, switches and every other control that inherits tint.
+    /// Without this the picker saved a value that changed nothing on screen.
+    func applyToConnectedScenes() {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .forEach { $0.tintColor = currentTheme.mainColor }
     }
 }
