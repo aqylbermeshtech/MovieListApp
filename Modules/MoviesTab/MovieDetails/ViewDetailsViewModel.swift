@@ -18,6 +18,7 @@ final class MediaDetailsViewModel {
     var releaseDate: String { media.releaseDate ?? media.firstAirDate ?? "N/A" }
     var voteAverage: Double { media.voteAverage }
     var imageURL: URL? { media.fullPosterURL }
+    var ratingState: RatingState { media.ratingState }
 
     init(media: Media) {
         self.media = media

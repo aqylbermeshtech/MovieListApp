@@ -71,12 +71,56 @@ enum RatingStar {
 
 enum RatingFormatter {
 
-    /// "★ 7.9" with the custom star inline, vertically centred on the text's cap height.
+    /// Renders a rating the way its confidence deserves. `compact` drops the vote count
+    /// for narrow contexts like a grid cell, where "· 4 votes" would truncate the score.
     static func attributedRating(
-        _ value: Double,
+        _ state: RatingState,
         font: UIFont,
         textColor: UIColor,
-        starColor: UIColor = .appAmber
+        starColor: UIColor = .appAmber,
+        compact: Bool = false
+    ) -> NSAttributedString {
+        switch state {
+        case let .rated(score, _):
+            return scoreLine(score: score, font: font, textColor: textColor, starColor: starColor)
+
+        case let .provisional(score, votes):
+            // Dimmed so a 10.0 off one vote doesn't read as loudly as a real 10.0.
+            let line = NSMutableAttributedString(attributedString: scoreLine(
+                score: score,
+                font: font,
+                textColor: .appDustyDenim,
+                starColor: starColor.withAlphaComponent(0.45)
+            ))
+            if !compact {
+                line.append(NSAttributedString(
+                    string: "  · \(votes) vote\(votes == 1 ? "" : "s")",
+                    attributes: [
+                        .font: UIFont.systemFont(ofSize: font.pointSize * 0.85, weight: .regular),
+                        .foregroundColor: UIColor.appDustyDenim
+                    ]
+                ))
+            }
+            return line
+
+        case .unrated:
+            return label("Not rated", font: font)
+
+        case let .upcoming(releaseDate):
+            guard let releaseDate = releaseDate else {
+                return label("Announced", font: font, symbol: "calendar")
+            }
+            return label(monthYearFormatter.string(from: releaseDate), font: font, symbol: "calendar")
+        }
+    }
+
+    // MARK: - Pieces
+
+    private static func scoreLine(
+        score: Double,
+        font: UIFont,
+        textColor: UIColor,
+        starColor: UIColor
     ) -> NSAttributedString {
         let starSize = (font.pointSize * 1.05).rounded()
 
@@ -91,9 +135,37 @@ enum RatingFormatter {
 
         let result = NSMutableAttributedString(attachment: attachment)
         result.append(NSAttributedString(
-            string: String(format: "  %.1f", value),
+            string: String(format: "  %.1f", score),
             attributes: [.font: font, .foregroundColor: textColor]
         ))
         return result
     }
+
+    /// A non-score state: muted text, optionally led by an SF Symbol.
+    private static func label(_ text: String, font: UIFont, symbol: String? = nil) -> NSAttributedString {
+        let result = NSMutableAttributedString()
+
+        if let symbol = symbol,
+           let image = UIImage(systemName: symbol)?
+            .withTintColor(.appDustyDenim, renderingMode: .alwaysOriginal) {
+            let attachment = NSTextAttachment()
+            attachment.image = image
+            let size = (font.pointSize * 0.95).rounded()
+            attachment.bounds = CGRect(x: 0, y: (font.capHeight - size) / 2, width: size, height: size)
+            result.append(NSAttributedString(attachment: attachment))
+            result.append(NSAttributedString(string: "  "))
+        }
+
+        result.append(NSAttributedString(
+            string: text,
+            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+        ))
+        return result
+    }
+
+    private static let monthYearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "LLL yyyy"
+        return formatter
+    }()
 }

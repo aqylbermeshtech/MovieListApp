@@ -16,9 +16,19 @@ struct Media: Codable {
     let releaseDate: String?
     let firstAirDate: String?
     let voteAverage: Double
+    /// Optional with a nil fallback: TMDB omits it on some payloads, and a missing
+    /// key on a non-optional field fails the whole response's decode.
+    let voteCount: Int?
 
     var displayName: String {
         return title ?? name ?? "Unknown"
+    }
+
+    /// Movies carry `release_date`, TV carries `first_air_date`.
+    var releaseDateString: String? { releaseDate ?? firstAirDate }
+
+    var ratingState: RatingState {
+        RatingState(voteAverage: voteAverage, voteCount: voteCount ?? 0, releaseDate: releaseDateString)
     }
 
     var fullPosterURL: URL? {

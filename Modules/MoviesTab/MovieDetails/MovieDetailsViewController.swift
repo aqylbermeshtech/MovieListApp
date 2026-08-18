@@ -154,7 +154,7 @@ final class MediaDetailsViewController: UIViewController {
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.overview
         ratingLabel.attributedText = RatingFormatter.attributedRating(
-            viewModel.voteAverage,
+            viewModel.ratingState,
             font: ratingLabel.font,
             textColor: .white
         )

@@ -70,9 +70,10 @@ final class MediaCell: UICollectionViewCell {
     func configure(with media: Media) {
         titleLabel.text = media.displayName
         ratingLabel.attributedText = RatingFormatter.attributedRating(
-            media.voteAverage,
+            media.ratingState,
             font: ratingLabel.font,
-            textColor: .white
+            textColor: .white,
+            compact: true
         )
         if let url = media.fullPosterURL {
             ImageLoader.load(url: url) { [weak self] image in

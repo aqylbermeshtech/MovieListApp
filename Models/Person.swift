@@ -39,8 +39,13 @@ struct PersonCredit: Codable {
     let releaseDate: String?
     let firstAirDate: String?
     let voteAverage: Double?
+    let voteCount: Int?
 
     var displayName: String { title ?? name ?? "Unknown" }
+
+    var ratingState: RatingState {
+        RatingState(voteAverage: voteAverage ?? 0, voteCount: voteCount ?? 0, releaseDate: releaseDate ?? firstAirDate)
+    }
 
     /// TMDB dates are ISO "yyyy-MM-dd", so lexicographic ordering is chronological.
     /// Undated credits sort last because an empty string precedes every real date.
@@ -63,7 +68,8 @@ struct PersonCredit: Codable {
             posterPath: posterPath,
             releaseDate: releaseDate,
             firstAirDate: firstAirDate,
-            voteAverage: voteAverage ?? 0
+            voteAverage: voteAverage ?? 0,
+            voteCount: voteCount
         )
     }
 }
