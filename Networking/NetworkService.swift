@@ -148,6 +148,14 @@ final class NetworkService {
         }.resume()
     }
     
+    func fetchGenres(isTV: Bool, completion: @escaping ([GenreListResponse.Genre]?) -> Void) {
+        let type = isTV ? "tv" : "movie"
+        let urlString = "\(baseURL)/genre/\(type)/list?api_key=\(apiKey)&language=en-US"
+        performRequest(urlString: urlString) { (result: GenreListResponse?) in
+            completion(result?.genres)
+        }
+    }
+
     func fetchPersonDetails(for id: Int, completion: @escaping (PersonDetails?) -> Void) {
         let urlString = "\(baseURL)/person/\(id)?api_key=\(apiKey)&language=en-US"
         performRequest(urlString: urlString, completion: completion)

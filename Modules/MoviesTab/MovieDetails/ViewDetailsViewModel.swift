@@ -19,6 +19,20 @@ final class MediaDetailsViewModel {
     var voteAverage: Double { media.voteAverage }
     var imageURL: URL? { media.fullPosterURL }
     var ratingState: RatingState { media.ratingState }
+    var year: String? { media.year }
+    var largeImageURL: URL? { media.largePosterURL ?? media.fullPosterURL }
+    private var isTV: Bool { media.name != nil }
+
+    private(set) var genreName: String?
+    var onGenreUpdate: (() -> Void)?
+
+    func fetchGenre() {
+        GenreProvider.shared.primaryGenreName(for: media.genreIds, isTV: isTV) { [weak self] name in
+            guard let self = self, let name = name else { return }
+            self.genreName = name
+            self.onGenreUpdate?()
+        }
+    }
 
     init(media: Media) {
         self.media = media
@@ -34,14 +48,12 @@ final class MediaDetailsViewModel {
     
     
     func fetchTrailer() {
-        let isTV = media.name != nil
         NetworkService.shared.fetchVideo(for: media.id, isTV: isTV) { [weak self] key in
             self?.onVideoUpdate?(key)
         }
     }
     
     func fetchActors() {
-        let isTV = media.name != nil
         NetworkService.shared.fetchActors(for: media.id, isTV: isTV) { [weak self] fetchedActors in
             guard let self = self, let fetchedActors = fetchedActors else { return }
             self.actors = fetchedActors

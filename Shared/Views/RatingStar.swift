@@ -114,6 +114,68 @@ enum RatingFormatter {
         }
     }
 
+
+    /// The details-screen header line: "★ 7.9/10 · 2026 · Science Fiction".
+    /// Any piece with no data is dropped along with its separator.
+    static func metadataLine(
+        state: RatingState,
+        year: String?,
+        genre: String?,
+        font: UIFont
+    ) -> NSAttributedString {
+        var chips: [NSAttributedString] = []
+
+        switch state {
+        case let .rated(score, _):
+            chips.append(scoreChip(score: score, font: font, textColor: .white, starColor: .appAmber))
+        case let .provisional(score, _):
+            chips.append(scoreChip(
+                score: score, font: font,
+                textColor: .appDustyDenim,
+                starColor: UIColor.appAmber.withAlphaComponent(0.45)
+            ))
+        case .unrated:
+            chips.append(label("Not rated", font: font))
+        case .upcoming:
+            // The year chip already communicates "not out yet"; a second marker is noise.
+            break
+        }
+
+        if let year = year {
+            chips.append(label(year, font: font, symbol: "calendar", textColor: .white))
+        }
+        if let genre = genre, !genre.isEmpty {
+            chips.append(label(genre, font: font, symbol: "film", textColor: .white))
+        }
+
+        let separator = NSAttributedString(
+            string: "   ·   ",
+            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+        )
+        let line = NSMutableAttributedString()
+        for (index, chip) in chips.enumerated() {
+            if index > 0 { line.append(separator) }
+            line.append(chip)
+        }
+        return line
+    }
+
+    private static func scoreChip(
+        score: Double,
+        font: UIFont,
+        textColor: UIColor,
+        starColor: UIColor
+    ) -> NSAttributedString {
+        let line = NSMutableAttributedString(attributedString: scoreLine(
+            score: score, font: font, textColor: textColor, starColor: starColor
+        ))
+        line.append(NSAttributedString(
+            string: "/10",
+            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+        ))
+        return line
+    }
+
     // MARK: - Pieces
 
     private static func scoreLine(
@@ -142,7 +204,12 @@ enum RatingFormatter {
     }
 
     /// A non-score state: muted text, optionally led by an SF Symbol.
-    private static func label(_ text: String, font: UIFont, symbol: String? = nil) -> NSAttributedString {
+    private static func label(
+        _ text: String,
+        font: UIFont,
+        symbol: String? = nil,
+        textColor: UIColor = .appDustyDenim
+    ) -> NSAttributedString {
         let result = NSMutableAttributedString()
 
         if let symbol = symbol,
@@ -158,7 +225,7 @@ enum RatingFormatter {
 
         result.append(NSAttributedString(
             string: text,
-            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+            attributes: [.font: font, .foregroundColor: textColor]
         ))
         return result
     }

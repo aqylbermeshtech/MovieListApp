@@ -12,6 +12,8 @@ final class MediaDetailsViewController: UIViewController {
 
     private let viewModel: MediaDetailsViewModel
     private let scrollView = UIScrollView()
+    /// True once the poster has scrolled up behind the navigation bar.
+    private var isBarCollapsed = false
 
     init(viewModel: MediaDetailsViewModel) {
         self.viewModel = viewModel
@@ -22,12 +24,13 @@ final class MediaDetailsViewController: UIViewController {
         fatalError()
     }
 
+    /// Runs edge to edge and up behind the navigation bar, so it carries no corner
+    /// radius and sits outside the inset text stack.
     private let imageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
-        iv.layer.cornerRadius = 12
-        iv.backgroundColor = .systemGray6
+        iv.backgroundColor = .graphiteSunken
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -41,10 +44,14 @@ final class MediaDetailsViewController: UIViewController {
         return label
     }()
 
-    private let ratingLabel: UILabel = {
+    /// "★ 7.9/10 · 2026 · Science Fiction"
+    private let metadataLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18, weight: .medium)
+        label.font = .systemFont(ofSize: 15, weight: .medium)
         label.textColor = .white
+        label.numberOfLines = 1
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.8
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -148,18 +155,15 @@ final class MediaDetailsViewController: UIViewController {
         bindViewModel()
         viewModel.fetchTrailer()
         viewModel.fetchActors()
+        viewModel.fetchGenre()
     }
     
     private func configure() {
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.overview
-        ratingLabel.attributedText = RatingFormatter.attributedRating(
-            viewModel.ratingState,
-            font: ratingLabel.font,
-            textColor: .white
-        )
-        
-        if let url = viewModel.imageURL {
+        renderMetadata()
+
+        if let url = viewModel.largeImageURL {
             ImageLoader.load(url: url) { [weak self] image in
                 self?.imageView.image = image
             }
@@ -183,6 +187,18 @@ final class MediaDetailsViewController: UIViewController {
                 self?.castCollectionView.reloadData()
             }
         }
+        viewModel.onGenreUpdate = { [weak self] in
+            DispatchQueue.main.async { self?.renderMetadata() }
+        }
+    }
+
+    private func renderMetadata() {
+        metadataLabel.attributedText = RatingFormatter.metadataLine(
+            state: viewModel.ratingState,
+            year: viewModel.year,
+            genre: viewModel.genreName,
+            font: metadataLabel.font
+        )
     }
     
     private func loadYoutubeVideo(key: String) {
@@ -194,46 +210,124 @@ final class MediaDetailsViewController: UIViewController {
     }
 
     private func setupUI() {
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.layer.cornerRadius = 12
-        imageView.translatesAutoresizingMaskIntoConstraints = false
+        // The poster is pinned to the scroll view directly; only the text below it is
+        // inset, which is what lets the artwork run edge to edge.
         let stack = UIStackView(arrangedSubviews: [
-            imageView,
             titleLabel,
-            ratingLabel,
+            metadataLabel,
             descriptionLabel,
             castCollectionView,
             videoLabel,
             videoPlayerView,
             trailerPlaceholderView
         ])
-        
+
         stack.axis = .vertical
         stack.spacing = 20
+        stack.setCustomSpacing(10, after: titleLabel)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
+        // Content starts at the very top of the screen, under the status and nav bars.
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.delegate = self
+        scrollView.addSubview(imageView)
         scrollView.addSubview(stack)
+
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-            stack.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor, constant: 16),
+            imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            imageView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            // TMDB posters are 2:3, so this shows the artwork uncropped.
+            imageView.heightAnchor.constraint(equalTo: imageView.widthAnchor, multiplier: 3.0 / 2.0),
+
+            stack.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
             stack.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor, constant: 16),
             stack.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor, constant: -16),
             stack.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor, constant: -16),
 
             stack.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor, constant: -32),
 
-            imageView.heightAnchor.constraint(equalToConstant: 450),
             videoPlayerView.heightAnchor.constraint(equalTo: videoPlayerView.widthAnchor, multiplier: 9.0 / 16.0),
             trailerPlaceholderView.heightAnchor.constraint(equalTo: trailerPlaceholderView.widthAnchor, multiplier: 9.0 / 16.0),
             castCollectionView.heightAnchor.constraint(equalToConstant: 160)
         ])
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // contentInsetAdjustmentBehavior is .never so the poster can reach the top, which
+        // also means the tab bar's inset has to be applied by hand at the bottom.
+        if scrollView.contentInset.bottom != view.safeAreaInsets.bottom {
+            scrollView.contentInset.bottom = view.safeAreaInsets.bottom
+        }
+    }
+
+    // MARK: - Navigation bar
+
+    private static func transparentBarAppearance() -> UINavigationBarAppearance {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithTransparentBackground()
+        return appearance
+    }
+
+    private static func opaqueBarAppearance() -> UINavigationBarAppearance {
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .graphite
+        appearance.shadowColor = .clear
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        return appearance
+    }
+
+    private func applyBarAppearance(collapsed: Bool) {
+        guard let bar = navigationController?.navigationBar else { return }
+        let appearance = collapsed ? Self.opaqueBarAppearance() : Self.transparentBarAppearance()
+        bar.standardAppearance = appearance
+        bar.scrollEdgeAppearance = appearance
+        bar.compactAppearance = appearance
+        bar.tintColor = .white
+        // The title only earns its place once the poster (which carries the name) is gone.
+        navigationItem.title = collapsed ? viewModel.title : nil
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        // Transparent over the poster; collapses to opaque as it scrolls away.
+        applyBarAppearance(collapsed: isBarCollapsed)
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        // The bar is shared with the rest of the tab, so hand it back opaque — this also
+        // covers pushing onward to the actor screen, not just popping back.
+        let opaque = Self.opaqueBarAppearance()
+        navigationController?.navigationBar.standardAppearance = opaque
+        navigationController?.navigationBar.scrollEdgeAppearance = opaque
+        navigationController?.navigationBar.compactAppearance = opaque
+    }
+}
+
+extension MediaDetailsViewController: UIScrollViewDelegate {
+
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // The cast collection view is also delegated to this object, and its horizontal
+        // scrolling must not drive the navigation bar.
+        guard scrollView === self.scrollView else { return }
+
+        let barBottom = view.safeAreaInsets.top + (navigationController?.navigationBar.bounds.height ?? 44)
+        let collapsed = scrollView.contentOffset.y > imageView.bounds.height - barBottom
+        guard collapsed != isBarCollapsed else { return }
+
+        isBarCollapsed = collapsed
+        UIView.animate(withDuration: 0.2) { self.applyBarAppearance(collapsed: collapsed) }
     }
 }
 

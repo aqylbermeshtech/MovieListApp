@@ -40,6 +40,7 @@ struct PersonCredit: Codable {
     let firstAirDate: String?
     let voteAverage: Double?
     let voteCount: Int?
+    let genreIds: [Int]?
 
     var displayName: String { title ?? name ?? "Unknown" }
 
@@ -69,7 +70,8 @@ struct PersonCredit: Codable {
             releaseDate: releaseDate,
             firstAirDate: firstAirDate,
             voteAverage: voteAverage ?? 0,
-            voteCount: voteCount
+            voteCount: voteCount,
+            genreIds: genreIds
         )
     }
 }
