@@ -12,6 +12,10 @@ final class MediaDetailsViewModel {
     var onVideoUpdate: ((String?) -> Void)?
     var onActorsUpdate: (() -> Void)?
     var actors: [Actor] = []
+    /// Distinguishes "still loading" from "loaded and genuinely empty", so the
+    /// placeholder can't flash before the request comes back.
+    private(set) var hasLoadedActors = false
+    private(set) var didFailToLoadActors = false
     var title: String { media.displayName }
     var overview: String { media.overview }
     var posterPath: String { media.posterPath ?? "" }
@@ -25,6 +29,16 @@ final class MediaDetailsViewModel {
 
     private(set) var genreName: String?
     var onGenreUpdate: (() -> Void)?
+
+    var castPlaceholderTitle: String {
+        didFailToLoadActors ? "Couldn't load the cast" : "No cast information"
+    }
+
+    var castPlaceholderSubtitle: String {
+        didFailToLoadActors
+            ? "Check your connection and try again"
+            : "TMDB doesn't list a cast for this title yet"
+    }
 
     func fetchGenre() {
         GenreProvider.shared.primaryGenreName(for: media.genreIds, isTV: isTV) { [weak self] name in
@@ -55,8 +69,12 @@ final class MediaDetailsViewModel {
     
     func fetchActors() {
         NetworkService.shared.fetchActors(for: media.id, isTV: isTV) { [weak self] fetchedActors in
-            guard let self = self, let fetchedActors = fetchedActors else { return }
-            self.actors = fetchedActors
+            guard let self = self else { return }
+            // A nil result means the request or decode failed. Bailing out here (as this
+            // used to) left the screen with no way to know the fetch was ever attempted.
+            self.didFailToLoadActors = (fetchedActors == nil)
+            self.actors = fetchedActors ?? []
+            self.hasLoadedActors = true
             self.onActorsUpdate?()
         }
     }

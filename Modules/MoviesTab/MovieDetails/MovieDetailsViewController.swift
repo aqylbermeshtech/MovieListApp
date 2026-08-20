@@ -98,6 +98,59 @@ final class MediaDetailsViewController: UIViewController {
         return webView
     }()
 
+    // Held as properties so the copy can switch between "empty" and "failed".
+    private let castPlaceholderTitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 19, weight: .semibold)
+        label.textColor = .textPrimary
+        return label
+    }()
+
+    private let castPlaceholderSubtitleLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 14, weight: .regular)
+        label.textColor = .textSecondary
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        return label
+    }()
+
+    private lazy var castPlaceholderView: UIView = {
+        let container = UIView()
+        container.backgroundColor = .surface
+        container.layer.cornerRadius = 12
+        container.layer.borderWidth = 1
+        container.layer.borderColor = UIColor.textPrimary.withAlphaComponent(0.16).cgColor
+        container.isHidden = true
+        container.translatesAutoresizingMaskIntoConstraints = false
+
+        let config = UIImage.SymbolConfiguration(pointSize: 34, weight: .regular)
+        // person.2.slash is newer than this app's floor, so fall back to the plain glyph.
+        let symbol = UIImage(systemName: "person.2.slash", withConfiguration: config)
+            ?? UIImage(systemName: "person.2.fill", withConfiguration: config)
+        let iconView = UIImageView(image: symbol)
+        iconView.tintColor = .textSecondary
+        iconView.contentMode = .scaleAspectFit
+
+        let stack = UIStackView(arrangedSubviews: [
+            iconView, castPlaceholderTitleLabel, castPlaceholderSubtitleLabel
+        ])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 6
+        stack.setCustomSpacing(14, after: iconView)
+        stack.translatesAutoresizingMaskIntoConstraints = false
+
+        container.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: container.leadingAnchor, constant: 24),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: container.trailingAnchor, constant: -24)
+        ])
+        return container
+    }()
+
     private let trailerPlaceholderView: UIView = {
         let container = UIView()
         container.backgroundColor = .surface
@@ -193,7 +246,9 @@ final class MediaDetailsViewController: UIViewController {
         }
         viewModel.onActorsUpdate = { [weak self] in
             DispatchQueue.main.async {
-                self?.castCollectionView.reloadData()
+                guard let self = self else { return }
+                self.castCollectionView.reloadData()
+                self.renderCastState()
             }
         }
         viewModel.onGenreUpdate = { [weak self] in
@@ -203,6 +258,16 @@ final class MediaDetailsViewController: UIViewController {
 
     @objc private func themeDidChange() {
         renderMetadata()
+    }
+
+    private func renderCastState() {
+        // Only once the request has resolved — otherwise every title shows "no cast"
+        // for the frame between first layout and the response landing.
+        let showPlaceholder = viewModel.hasLoadedActors && viewModel.actors.isEmpty
+        castPlaceholderTitleLabel.text = viewModel.castPlaceholderTitle
+        castPlaceholderSubtitleLabel.text = viewModel.castPlaceholderSubtitle
+        castPlaceholderView.isHidden = !showPlaceholder
+        castCollectionView.isHidden = showPlaceholder
     }
 
     private func renderMetadata() {
@@ -230,6 +295,7 @@ final class MediaDetailsViewController: UIViewController {
             metadataLabel,
             descriptionLabel,
             castCollectionView,
+            castPlaceholderView,
             videoLabel,
             videoPlayerView,
             trailerPlaceholderView
@@ -270,7 +336,8 @@ final class MediaDetailsViewController: UIViewController {
 
             videoPlayerView.heightAnchor.constraint(equalTo: videoPlayerView.widthAnchor, multiplier: 9.0 / 16.0),
             trailerPlaceholderView.heightAnchor.constraint(equalTo: trailerPlaceholderView.widthAnchor, multiplier: 9.0 / 16.0),
-            castCollectionView.heightAnchor.constraint(equalToConstant: 160)
+            castCollectionView.heightAnchor.constraint(equalToConstant: 160),
+            castPlaceholderView.heightAnchor.constraint(equalToConstant: 160)
         ])
     }
 
