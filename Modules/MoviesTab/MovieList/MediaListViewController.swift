@@ -16,7 +16,7 @@ final class MediaListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         setupUI()
         bindViewModel()
         viewModel.fetchContent(type: .movies)
@@ -35,12 +35,12 @@ final class MediaListViewController: UIViewController {
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .black
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backgroundColor = .canvas
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.textPrimary]
         
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.tintColor = .textPrimary
     }
     
     @objc private func themeChanged() {
@@ -75,7 +75,7 @@ final class MediaListViewController: UIViewController {
         trendingView.onArticleSelected = { [weak self] article in
             guard let url = self?.viewModel.getUrl(for: article) else { return }
             let safariVC = SFSafariViewController(url: url)
-            safariVC.preferredControlTintColor = .systemBlue
+            safariVC.preferredControlTintColor = .accent
             self?.present(safariVC, animated: true)
         }
         topSwitcher.onSegmentChanged = { [weak self] index in

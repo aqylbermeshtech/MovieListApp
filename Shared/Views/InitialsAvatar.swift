@@ -7,30 +7,32 @@
 
 import UIKit
 
-/// Draws a per-user avatar from their initials. The colour is derived from the name
-/// itself, so the same account always gets the same avatar instead of everyone sharing
-/// one grey placeholder glyph.
+/// Draws a per-user avatar from their initials — a filled ring on a plain surface,
+/// with no colour of its own. Identity comes from the letters, not from a hue.
 enum InitialsAvatar {
-
-    private static let palette: [UIColor] = [
-        .appTomato, .appDustyDenim, .appAmber, .appDarkTeal, .midnightViolet
-    ]
 
     static func image(name: String?, email: String?, size: CGFloat) -> UIImage {
         let initials = self.initials(name: name, email: email)
-        let background = color(for: name?.isEmpty == false ? name! : (email ?? ""))
 
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
         return renderer.image { context in
-            background.setFill()
+            UIColor.surface.setFill()
             context.cgContext.fillEllipse(in: CGRect(x: 0, y: 0, width: size, height: size))
+
+            // A hairline ring keeps the circle readable where surface and canvas are close.
+            let inset = max(1, size * 0.006)
+            UIColor.hairline.setStroke()
+            context.cgContext.setLineWidth(inset * 2)
+            context.cgContext.strokeEllipse(
+                in: CGRect(x: 0, y: 0, width: size, height: size).insetBy(dx: inset, dy: inset)
+            )
 
             let paragraph = NSMutableParagraphStyle()
             paragraph.alignment = .center
 
             let attributes: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: size * 0.38, weight: .semibold),
-                .foregroundColor: UIColor.white,
+                .foregroundColor: UIColor.textPrimary,
                 .paragraphStyle: paragraph
             ]
 
@@ -64,10 +66,4 @@ enum InitialsAvatar {
         return "?"
     }
 
-    /// Stable across launches — `hashValue` is seeded per process, so sum the scalars.
-    private static func color(for seed: String) -> UIColor {
-        guard !seed.isEmpty else { return .appDustyDenim }
-        let total = seed.unicodeScalars.reduce(0) { $0 + Int($1.value) }
-        return palette[total % palette.count]
-    }
 }

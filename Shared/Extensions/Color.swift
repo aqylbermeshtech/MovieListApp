@@ -26,13 +26,30 @@ extension UIColor {
     }
 }
 extension UIColor {
-    static let appDarkTeal  =  UIColor(hex: "02394A")
-    static let midnightViolet = UIColor(hex: "1f0318")
-    static let graphite  =  UIColor(hex:"39393A")
-    static let graphiteSunken  =  UIColor(hex: "2C2C2E")
-    static let appAmber  =  UIColor(hex: "F0A830")
-    static let appDustyDenim  =  UIColor(hex: "748CAB")
-    static let appTomato  =  UIColor(hex: "F15946")
-    static let alabasterGray  =  UIColor(hex: "CFDBD5")
-    static let appSoftBlush  =  UIColor(hex: "F4DBD8")
+
+    // MARK: - Neutral ramp
+    //
+    // Five steps carry the entire interface. Posters are the only saturated thing on
+    // screen, so nothing in the chrome competes with them.
+
+    /// App background.
+    static let canvas        = UIColor(hex: "0A0A0B")
+    /// Cards, wells and any surface sitting on the canvas.
+    static let surface       = UIColor(hex: "151517")
+    /// Hairline borders and separators.
+    static let hairline      = UIColor(hex: "2A2A2E")
+    /// Titles and body copy. Slightly off pure white, which glares against near-black.
+    static let textPrimary   = UIColor(hex: "F5F5F7")
+    /// Captions, metadata, disabled states.
+    static let textSecondary = UIColor(hex: "8A8A8F")
+
+    /// Muted red for destructive actions — the one place colour still means "careful".
+    static let destructive   = UIColor(hex: "D96A5A")
+
+    /// The single accent. Follows the selected theme, so ratings, the active tab and
+    /// every other emphasis point stay in step with one another.
+    static var accent: UIColor { ThemeManager.shared.currentTheme.mainColor }
+
+    /// Drawn on top of `accent`. Every theme accent is light, so this is the canvas.
+    static var onAccent: UIColor { .canvas }
 }

@@ -15,7 +15,7 @@ class ActorsCell:UICollectionViewCell {
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
         iv.layer.cornerRadius = 40
-        iv.backgroundColor = .systemGray5
+        iv.backgroundColor = .surface
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -24,7 +24,7 @@ class ActorsCell:UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .bold)
         label.textAlignment = .center
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -32,9 +32,9 @@ class ActorsCell:UICollectionViewCell {
     private let characterLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12, weight: .regular)
-        label.textColor = .secondaryLabel
+        label.textColor = .textSecondary
         label.textAlignment = .center
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -81,7 +81,7 @@ class ActorsCell:UICollectionViewCell {
             }
         } else {
             profileImageView.image = UIImage(systemName: "person.fill")
-            profileImageView.tintColor = .systemGray3
+            profileImageView.tintColor = .textSecondary
         }
     }
 }

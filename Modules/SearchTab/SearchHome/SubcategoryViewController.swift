@@ -21,7 +21,7 @@ final class SubcategoryViewController:UIViewController, UITableViewDelegate, UIT
         
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         setupTableView()
     }
         
@@ -41,14 +41,14 @@ final class SubcategoryViewController:UIViewController, UITableViewDelegate, UIT
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "subCell", for: indexPath)
         cell.textLabel?.text = items[indexPath.row]
-        cell.textLabel?.textColor = .white
-        cell.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
+        cell.textLabel?.textColor = .textPrimary
+        cell.backgroundColor = .surface
         let accessoryView = UIImageView(image: chevronImage)
-        accessoryView.tintColor = .lightGray
+        accessoryView.tintColor = .textSecondary
         cell.accessoryView = accessoryView
         if cell.selectedBackgroundView == nil {
             let selectionView = UIView()
-            selectionView.backgroundColor = UIColor(white: 0.2, alpha: 1.0)
+            selectionView.backgroundColor = .hairline
             cell.selectedBackgroundView = selectionView
         }
         return cell

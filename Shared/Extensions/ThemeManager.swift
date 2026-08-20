@@ -9,31 +9,25 @@ import UIKit
 
 // 1. Описываем доступные темы или палитры
 enum AppTheme: String {
-    case classic
-    case neon
-    case darkGold
-    
+    case mono
+    case amber
+    case slate
+
+    /// The one saturated-ish colour in the interface. All three are deliberately
+    /// low-chroma: posters supply the colour, the chrome stays out of the way.
     var mainColor: UIColor {
         switch self {
-        case .classic: return .systemBlue
-        case .neon: return .systemGreen
-        case .darkGold: return UIColor(red: 0.85, green: 0.65, blue: 0.13, alpha: 1.0)
-        }
-    }
-    
-    var secondaryColor: UIColor {
-        switch self {
-        case .classic: return .systemGray
-        case .neon: return .systemPurple
-        case .darkGold: return .darkGray
+        case .mono:  return UIColor(hex: "F5F5F7")
+        case .amber: return UIColor(hex: "D8A657")
+        case .slate: return UIColor(hex: "8FA3B8")
         }
     }
 
     var displayName: String {
         switch self {
-        case .classic: return "Classic Blue"
-        case .neon: return "Neon Green"
-        case .darkGold: return "Dark Gold"
+        case .mono:  return "Monochrome"
+        case .amber: return "Amber"
+        case .slate: return "Slate"
         }
     }
 }
@@ -47,7 +41,7 @@ final class ThemeManager {
     
     private let themeKey = "selected_app_theme"
     
-    private(set) var currentTheme: AppTheme = .classic
+    private(set) var currentTheme: AppTheme = .mono
     
     private init() {
         // Загружаем сохраненную тему при старте

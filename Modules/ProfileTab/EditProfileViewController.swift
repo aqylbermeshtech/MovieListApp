@@ -28,7 +28,7 @@ final class EditProfileViewController: UIViewController {
         let label = UILabel()
         label.text = "Your avatar is generated from your name"
         label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
@@ -38,15 +38,15 @@ final class EditProfileViewController: UIViewController {
         let label = UILabel()
         label.text = "DISPLAY NAME"
         label.font = .systemFont(ofSize: 12, weight: .semibold)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         return label
     }()
 
     private lazy var nameTextField: UITextField = {
         let field = UITextField()
         field.font = .systemFont(ofSize: 17, weight: .regular)
-        field.textColor = .white
-        field.backgroundColor = .graphiteSunken
+        field.textColor = .textPrimary
+        field.backgroundColor = .surface
         field.layer.cornerRadius = 10
         field.autocorrectionType = .no
         field.autocapitalizationType = .words
@@ -54,7 +54,7 @@ final class EditProfileViewController: UIViewController {
         field.clearButtonMode = .whileEditing
         field.attributedPlaceholder = NSAttributedString(
             string: "Your name",
-            attributes: [.foregroundColor: UIColor.appDustyDenim]
+            attributes: [.foregroundColor: UIColor.textSecondary]
         )
         // UITextField has no built-in content inset.
         field.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 1))
@@ -71,14 +71,14 @@ final class EditProfileViewController: UIViewController {
         let label = UILabel()
         label.text = "EMAIL"
         label.font = .systemFont(ofSize: 12, weight: .semibold)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         return label
     }()
 
     private let emailValueLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 17, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.numberOfLines = 0
         return label
     }()
@@ -87,7 +87,7 @@ final class EditProfileViewController: UIViewController {
         let label = UILabel()
         label.text = "Your email is tied to your sign-in and can't be changed here."
         label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.numberOfLines = 0
         return label
     }()
@@ -95,8 +95,8 @@ final class EditProfileViewController: UIViewController {
     private lazy var saveButton: UIButton = {
         var config = UIButton.Configuration.filled()
         config.title = "Save Changes"
-        config.baseBackgroundColor = .appTomato
-        config.baseForegroundColor = .white
+        config.baseBackgroundColor = .accent
+        config.baseForegroundColor = .onAccent
         config.cornerStyle = .medium
         config.contentInsets = NSDirectionalEdgeInsets(top: 14, leading: 20, bottom: 14, trailing: 20)
 
@@ -108,7 +108,7 @@ final class EditProfileViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .graphite
+        view.backgroundColor = .canvas
         title = "Edit Profile"
 
         let user = Auth.auth().currentUser
@@ -187,8 +187,8 @@ final class EditProfileViewController: UIViewController {
         saveButton.isEnabled = isEnabled
         // Keep the disabled state readable rather than fading the whole button out —
         // a near-invisible button reads as a rendering bug, not as "nothing to save".
-        saveButton.configuration?.baseBackgroundColor = isEnabled ? .appTomato : .graphiteSunken
-        saveButton.configuration?.baseForegroundColor = isEnabled ? .white : .appDustyDenim
+        saveButton.configuration?.baseBackgroundColor = isEnabled ? .accent : .surface
+        saveButton.configuration?.baseForegroundColor = isEnabled ? .onAccent : .textSecondary
     }
 
     @objc private func nameChanged() {

@@ -29,8 +29,8 @@ final class ActorViewController: UIViewController {
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
         iv.layer.cornerRadius = 70
-        iv.backgroundColor = .graphiteSunken
-        iv.tintColor = .appDustyDenim
+        iv.backgroundColor = .surface
+        iv.tintColor = .textSecondary
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -38,7 +38,7 @@ final class ActorViewController: UIViewController {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 26, weight: .bold)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
@@ -47,7 +47,7 @@ final class ActorViewController: UIViewController {
     private let subtitleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
@@ -56,7 +56,7 @@ final class ActorViewController: UIViewController {
     private let birthplaceLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.textAlignment = .center
         label.numberOfLines = 0
         return label
@@ -65,7 +65,7 @@ final class ActorViewController: UIViewController {
     private let biographyLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.textColor = .alabasterGray
+        label.textColor = .textPrimary
         label.numberOfLines = ActorViewController.collapsedBiographyLines
         return label
     }()
@@ -73,7 +73,7 @@ final class ActorViewController: UIViewController {
     private lazy var readMoreButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Read more", for: .normal)
-        button.setTitleColor(.appTomato, for: .normal)
+        button.setTitleColor(.accent, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
         button.contentHorizontalAlignment = .leading
         button.isHidden = true
@@ -85,14 +85,14 @@ final class ActorViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .semibold)
         label.text = "Filmography"
-        label.textColor = .white
+        label.textColor = .textPrimary
         return label
     }()
 
     private let emptyFilmographyLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.numberOfLines = 0
         label.isHidden = true
         return label
@@ -116,7 +116,7 @@ final class ActorViewController: UIViewController {
 
     private let loadingIndicator: UIActivityIndicatorView = {
         let indicator = UIActivityIndicatorView(style: .large)
-        indicator.color = .alabasterGray
+        indicator.color = .textPrimary
         indicator.hidesWhenStopped = true
         indicator.translatesAutoresizingMaskIntoConstraints = false
         return indicator
@@ -128,7 +128,7 @@ final class ActorViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .graphite
+        view.backgroundColor = .canvas
         title = viewModel.name
 
         filmographyCollectionView.delegate = self
@@ -145,6 +145,13 @@ final class ActorViewController: UIViewController {
             self?.view.setNeedsLayout()
         }
         viewModel.load()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(themeDidChange),
+            name: ThemeManager.themeDidChangeNotification,
+            object: nil
+        )
     }
 
     override func viewDidLayoutSubviews() {
@@ -158,6 +165,11 @@ final class ActorViewController: UIViewController {
     }
 
     // MARK: - Rendering
+
+    @objc private func themeDidChange() {
+        readMoreButton.setTitleColor(.accent, for: .normal)
+        filmographyCollectionView.reloadData()
+    }
 
     private func render() {
         title = viewModel.name

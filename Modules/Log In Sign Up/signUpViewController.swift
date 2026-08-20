@@ -12,7 +12,7 @@ class SignUpViewController: UIViewController {
         let label = UILabel()
         label.text = "Create Account"
         label.font = .systemFont(ofSize: 28, weight: .bold)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.textAlignment = .center
         return label
     }()
@@ -21,8 +21,8 @@ class SignUpViewController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Username"
         tf.borderStyle = .roundedRect
-        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        tf.textColor = .white
+        tf.backgroundColor = .surface
+        tf.textColor = .textPrimary
         tf.autocapitalizationType = .words
         return tf
     }()
@@ -31,8 +31,8 @@ class SignUpViewController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Email"
         tf.borderStyle = .roundedRect
-        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        tf.textColor = .white
+        tf.backgroundColor = .surface
+        tf.textColor = .textPrimary
         tf.keyboardType = .emailAddress
         tf.autocapitalizationType = .none
         return tf
@@ -42,8 +42,8 @@ class SignUpViewController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Password"
         tf.borderStyle = .roundedRect
-        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        tf.textColor = .white
+        tf.backgroundColor = .surface
+        tf.textColor = .textPrimary
         tf.isSecureTextEntry = true
         tf.textContentType = .newPassword
         tf.autocorrectionType = .no
@@ -54,8 +54,8 @@ class SignUpViewController: UIViewController {
     private let signUpButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Sign Up", for: .normal)
-        button.backgroundColor = .systemGreen
-        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .accent
+        button.setTitleColor(.onAccent, for: .normal)
         button.layer.cornerRadius = 8
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         return button
@@ -64,13 +64,13 @@ class SignUpViewController: UIViewController {
     private let goToLoginButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Already have an account? Log In", for: .normal)
-        button.setTitleColor(.lightGray, for: .normal)
+        button.setTitleColor(.textSecondary, for: .normal)
         return button
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         setupLayout()
         setupActions()
     }

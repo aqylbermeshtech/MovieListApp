@@ -22,14 +22,14 @@ final class ArticlesCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 18, weight: .bold)
         label.numberOfLines = 2
-        label.textColor = .white
+        label.textColor = .textPrimary
         return label
     }()
     private let descriptionLabel:UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
         label.numberOfLines = 3
-        label.textColor = .lightGray
+        label.textColor = .textSecondary
         return label
     }()
 
@@ -44,7 +44,7 @@ final class ArticlesCell: UICollectionViewCell {
     }
     
     private func setupUI() {
-        contentView.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
+        contentView.backgroundColor = .surface
         contentView.layer.cornerRadius = 12
         contentView.clipsToBounds = true
         

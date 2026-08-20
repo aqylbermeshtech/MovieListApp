@@ -13,13 +13,15 @@ final class TopSegmentedControlView: UIView {
     private let segmentedControl: UISegmentedControl = {
         let sc = UISegmentedControl(items: ["Movies", "TV Series", "Articles"])
         sc.selectedSegmentIndex = 0
-        sc.selectedSegmentTintColor = .graphite
+        sc.backgroundColor = .surface
+        sc.selectedSegmentTintColor = .accent
         let normalAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.systemBackground,
+            .foregroundColor: UIColor.textSecondary,
             .font: UIFont.systemFont(ofSize: 14, weight: .bold)
         ]
+        // The selected pill is filled with the accent, so its label has to be dark.
         let selectedAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.white,
+            .foregroundColor: UIColor.onAccent,
             .font: UIFont.systemFont(ofSize: 14, weight: .bold)
         ]
         sc.setTitleTextAttributes(normalAttributes, for: .normal)

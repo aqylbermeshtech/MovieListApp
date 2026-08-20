@@ -24,7 +24,7 @@ final class MovieGridViewController: UIViewController {
         layout.minimumInteritemSpacing = 10
         
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        cv.backgroundColor = .black
+        cv.backgroundColor = .canvas
         cv.register(MediaCell.self, forCellWithReuseIdentifier: MediaCell.identifier)
         cv.translatesAutoresizingMaskIntoConstraints = false
         return cv
@@ -42,7 +42,7 @@ final class MovieGridViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         title = filterValue
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         
         setupCollectionView()
         fetchMovies(page: currentPage)

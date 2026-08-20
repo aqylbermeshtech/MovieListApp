@@ -21,7 +21,7 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         setupNavigationBar()
         setupUI()
     }
@@ -33,12 +33,12 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .black
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.backgroundColor = .canvas
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.textPrimary]
         
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.tintColor = .textPrimary
     }
     
     private func setupUI() {
@@ -68,22 +68,22 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         guard let header = view as? UITableViewHeaderFooterView else { return }
         header.textLabel?.font = .systemFont(ofSize: 22, weight: .bold)
-        header.textLabel?.textColor = .white
+        header.textLabel?.textColor = .textPrimary
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         
         cell.textLabel?.text = viewModel.item(at: indexPath)
-        cell.textLabel?.textColor = .white
-        cell.backgroundColor = UIColor(white: 0.1, alpha: 1.0)
+        cell.textLabel?.textColor = .textPrimary
+        cell.backgroundColor = .surface
         
         let accessoryView = UIImageView(image: chevronImage)
-        accessoryView.tintColor = .lightGray
+        accessoryView.tintColor = .textSecondary
         cell.accessoryView = accessoryView
         
         if cell.selectedBackgroundView == nil {
             let selectionView = UIView()
-            selectionView.backgroundColor = UIColor(white: 0.2, alpha: 1.0)
+            selectionView.backgroundColor = .hairline
             cell.selectedBackgroundView = selectionView
         }
         return cell

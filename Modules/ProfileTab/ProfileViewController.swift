@@ -24,7 +24,7 @@ final class ProfileViewController: UIViewController {
     private let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .bold)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.textAlignment = .center
         label.numberOfLines = 1
         return label
@@ -33,7 +33,7 @@ final class ProfileViewController: UIViewController {
     private let emailLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .regular)
-        label.textColor = .alabasterGray
+        label.textColor = .textPrimary
         label.textAlignment = .center
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
@@ -44,7 +44,7 @@ final class ProfileViewController: UIViewController {
     private let memberSinceLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .appDustyDenim
+        label.textColor = .textSecondary
         label.textAlignment = .center
         label.numberOfLines = 1
         return label
@@ -60,7 +60,7 @@ final class ProfileViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .graphite
+        view.backgroundColor = .canvas
         setupNavigationBar()
         setupTableView()
         configureData()
@@ -84,13 +84,13 @@ final class ProfileViewController: UIViewController {
         // background, so it matches the graphite content underneath it.
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .graphite
+        appearance.backgroundColor = .canvas
         appearance.shadowColor = .clear
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.textPrimary]
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
-        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.tintColor = .textPrimary
     }
 
     private func configureData() {
@@ -168,13 +168,13 @@ final class ProfileViewController: UIViewController {
     private func showThemeSelectionAlert() {
         let alert = UIAlertController(
             title: "Select App Theme",
-            message: "Choose your favorite accent color",
+            message: "One accent, used everywhere",
             preferredStyle: .actionSheet
         )
 
         // The active theme is already shown as the row's detail text, so the sheet
         // doesn't need a checkmark — which would mean poking a private UIAlertAction key.
-        for theme in [AppTheme.classic, .neon, .darkGold] {
+        for theme in [AppTheme.mono, .amber, .slate] {
             alert.addAction(UIAlertAction(title: theme.displayName, style: .default) { [weak self] _ in
                 guard let self = self else { return }
                 self.viewModel.changeTheme(to: theme)
@@ -267,7 +267,7 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
         guard let option = viewModel.option(at: indexPath) else { return cell }
 
         let isDestructive = option.type == .logout
-        let tint: UIColor = isDestructive ? .systemRed : .white
+        let tint: UIColor = isDestructive ? .destructive : .textPrimary
 
         // `valueCell` right-aligns the secondary text (the current theme) and, unlike an
         // accessoryView, leaves the disclosure chevron in place.
@@ -277,12 +277,12 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
         content.text = option.title
         content.textProperties.color = tint
         content.secondaryText = option.detail
-        content.secondaryTextProperties.color = .appDustyDenim
+        content.secondaryTextProperties.color = .textSecondary
         content.image = UIImage(systemName: option.iconName)
         content.imageProperties.tintColor = tint
         cell.contentConfiguration = content
 
-        cell.backgroundColor = .graphiteSunken
+        cell.backgroundColor = .surface
         cell.accessoryType = isDestructive ? .none : .disclosureIndicator
 
         return cell
@@ -296,7 +296,7 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
     /// Grouped-table headers default to a dark grey that disappears against graphite.
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         guard let header = view as? UITableViewHeaderFooterView else { return }
-        header.textLabel?.textColor = .appDustyDenim
+        header.textLabel?.textColor = .textSecondary
         header.textLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
     }
 }

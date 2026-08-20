@@ -17,7 +17,7 @@ final class TrendingMediaGridView: UIView {
         let label = UILabel()
         label.text = "Trending Movies"
         label.font = .systemFont(ofSize: 22, weight: .bold)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -36,7 +36,7 @@ final class TrendingMediaGridView: UIView {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = .graphite
+        self.backgroundColor = .canvas
         setupUI()
     }
 

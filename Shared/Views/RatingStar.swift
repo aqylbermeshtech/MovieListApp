@@ -19,7 +19,7 @@ enum RatingStar {
 
     private static let cache = NSCache<NSString, UIImage>()
 
-    static func image(pointSize: CGFloat, color: UIColor = .appAmber) -> UIImage {
+    static func image(pointSize: CGFloat, color: UIColor = .accent) -> UIImage {
         let key = "\(pointSize)-\(color.hashValue)" as NSString
         if let cached = cache.object(forKey: key) { return cached }
 
@@ -77,7 +77,7 @@ enum RatingFormatter {
         _ state: RatingState,
         font: UIFont,
         textColor: UIColor,
-        starColor: UIColor = .appAmber,
+        starColor: UIColor = .accent,
         compact: Bool = false
     ) -> NSAttributedString {
         switch state {
@@ -89,7 +89,7 @@ enum RatingFormatter {
             let line = NSMutableAttributedString(attributedString: scoreLine(
                 score: score,
                 font: font,
-                textColor: .appDustyDenim,
+                textColor: .textSecondary,
                 starColor: starColor.withAlphaComponent(0.45)
             ))
             if !compact {
@@ -97,7 +97,7 @@ enum RatingFormatter {
                     string: "  · \(votes) vote\(votes == 1 ? "" : "s")",
                     attributes: [
                         .font: UIFont.systemFont(ofSize: font.pointSize * 0.85, weight: .regular),
-                        .foregroundColor: UIColor.appDustyDenim
+                        .foregroundColor: UIColor.textSecondary
                     ]
                 ))
             }
@@ -127,12 +127,12 @@ enum RatingFormatter {
 
         switch state {
         case let .rated(score, _):
-            chips.append(scoreChip(score: score, font: font, textColor: .white, starColor: .appAmber))
+            chips.append(scoreChip(score: score, font: font, textColor: .textPrimary, starColor: .accent))
         case let .provisional(score, _):
             chips.append(scoreChip(
                 score: score, font: font,
-                textColor: .appDustyDenim,
-                starColor: UIColor.appAmber.withAlphaComponent(0.45)
+                textColor: .textSecondary,
+                starColor: UIColor.accent.withAlphaComponent(0.45)
             ))
         case .unrated:
             chips.append(label("Not rated", font: font))
@@ -142,15 +142,15 @@ enum RatingFormatter {
         }
 
         if let year = year {
-            chips.append(label(year, font: font, symbol: "calendar", textColor: .white))
+            chips.append(label(year, font: font, symbol: "calendar", textColor: .textPrimary))
         }
         if let genre = genre, !genre.isEmpty {
-            chips.append(label(genre, font: font, symbol: "film", textColor: .white))
+            chips.append(label(genre, font: font, symbol: "film", textColor: .textPrimary))
         }
 
         let separator = NSAttributedString(
             string: "   ·   ",
-            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+            attributes: [.font: font, .foregroundColor: UIColor.textSecondary]
         )
         let line = NSMutableAttributedString()
         for (index, chip) in chips.enumerated() {
@@ -171,7 +171,7 @@ enum RatingFormatter {
         ))
         line.append(NSAttributedString(
             string: "/10",
-            attributes: [.font: font, .foregroundColor: UIColor.appDustyDenim]
+            attributes: [.font: font, .foregroundColor: UIColor.textSecondary]
         ))
         return line
     }
@@ -208,13 +208,13 @@ enum RatingFormatter {
         _ text: String,
         font: UIFont,
         symbol: String? = nil,
-        textColor: UIColor = .appDustyDenim
+        textColor: UIColor = .textSecondary
     ) -> NSAttributedString {
         let result = NSMutableAttributedString()
 
         if let symbol = symbol,
            let image = UIImage(systemName: symbol)?
-            .withTintColor(.appDustyDenim, renderingMode: .alwaysOriginal) {
+            .withTintColor(.textSecondary, renderingMode: .alwaysOriginal) {
             let attachment = NSTextAttachment()
             attachment.image = image
             let size = (font.pointSize * 0.95).rounded()

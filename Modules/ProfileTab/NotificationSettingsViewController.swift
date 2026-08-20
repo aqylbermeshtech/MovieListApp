@@ -22,7 +22,7 @@ final class NotificationSettingsViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .graphite
+        view.backgroundColor = .canvas
         title = "Notifications"
 
         tableView.delegate = self
@@ -119,20 +119,20 @@ extension NotificationSettingsViewController: UITableViewDelegate, UITableViewDa
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.backgroundColor = .graphiteSunken
+        cell.backgroundColor = .surface
         cell.selectionStyle = .default
         cell.accessoryView = nil
         cell.accessoryType = .none
 
         var content = cell.defaultContentConfiguration()
-        content.textProperties.color = .white
-        content.secondaryTextProperties.color = .appDustyDenim
+        content.textProperties.color = .textPrimary
+        content.secondaryTextProperties.color = .textSecondary
 
         if indexPath.section == 0 {
             content.text = "Notifications"
             content.secondaryText = statusText
             cell.accessoryType = isAuthorized ? .checkmark : .disclosureIndicator
-            cell.tintColor = .appAmber
+            cell.tintColor = .accent
         } else {
             guard let preference = NotificationPreference.allCases[safe: indexPath.row] else { return cell }
             content.text = preference.title
@@ -142,13 +142,13 @@ extension NotificationSettingsViewController: UITableViewDelegate, UITableViewDa
             toggle.tag = indexPath.row
             toggle.isOn = store.isEnabled(preference) && isAuthorized
             toggle.isEnabled = isAuthorized
-            toggle.onTintColor = .appTomato
+            toggle.onTintColor = .accent
             toggle.addTarget(self, action: #selector(toggleChanged(_:)), for: .valueChanged)
 
             cell.accessoryView = toggle
             cell.selectionStyle = .none
             // Dim the row so it's clear why the toggles don't respond.
-            content.textProperties.color = isAuthorized ? .white : .appDustyDenim
+            content.textProperties.color = isAuthorized ? .white : .textSecondary
         }
 
         cell.contentConfiguration = content
@@ -157,13 +157,13 @@ extension NotificationSettingsViewController: UITableViewDelegate, UITableViewDa
 
     func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         guard let header = view as? UITableViewHeaderFooterView else { return }
-        header.textLabel?.textColor = .appDustyDenim
+        header.textLabel?.textColor = .textSecondary
         header.textLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
     }
 
     func tableView(_ tableView: UITableView, willDisplayFooterView view: UIView, forSection section: Int) {
         guard let footer = view as? UITableViewHeaderFooterView else { return }
-        footer.textLabel?.textColor = .appDustyDenim
+        footer.textLabel?.textColor = .textSecondary
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

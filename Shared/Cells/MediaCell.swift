@@ -15,8 +15,8 @@ final class MediaCell: UICollectionViewCell {
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
         iv.layer.cornerRadius = 12
-        iv.backgroundColor = .graphiteSunken
-        iv.tintColor = .appDustyDenim
+        iv.backgroundColor = .surface
+        iv.tintColor = .textSecondary
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -25,14 +25,14 @@ final class MediaCell: UICollectionViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .bold)
         label.numberOfLines = 2
-        label.textColor = .white
+        label.textColor = .textPrimary
         return label
     }()
 
     private let ratingLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 12)
-        label.textColor = .white
+        label.textColor = .textPrimary
         return label
     }()
 
@@ -72,7 +72,7 @@ final class MediaCell: UICollectionViewCell {
         ratingLabel.attributedText = RatingFormatter.attributedRating(
             media.ratingState,
             font: ratingLabel.font,
-            textColor: .white,
+            textColor: .textPrimary,
             compact: true
         )
         if let url = media.fullPosterURL {

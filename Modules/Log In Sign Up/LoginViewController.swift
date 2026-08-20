@@ -14,7 +14,7 @@ class LoginViewController: UIViewController {
         let label = UILabel()
         label.text = "Welcome Back"
         label.font = .systemFont(ofSize: 28, weight: .bold)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.textAlignment = .center
         return label
     }()
@@ -23,8 +23,8 @@ class LoginViewController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Email"
         tf.borderStyle = .roundedRect
-        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        tf.textColor = .white
+        tf.backgroundColor = .surface
+        tf.textColor = .textPrimary
         tf.keyboardType = .emailAddress
         tf.autocapitalizationType = .none
         return tf
@@ -34,8 +34,8 @@ class LoginViewController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Password"
         tf.borderStyle = .roundedRect
-        tf.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
-        tf.textColor = .white
+        tf.backgroundColor = .surface
+        tf.textColor = .textPrimary
         tf.isSecureTextEntry = true
         return tf
     }()
@@ -43,8 +43,8 @@ class LoginViewController: UIViewController {
     private let loginButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Log In", for: .normal)
-        button.backgroundColor = .systemBlue
-        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .accent
+        button.setTitleColor(.onAccent, for: .normal)
         button.layer.cornerRadius = 8
         button.titleLabel?.font = .systemFont(ofSize: 16, weight: .bold)
         return button
@@ -53,13 +53,13 @@ class LoginViewController: UIViewController {
     private let goToSignUpButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("New here? Create an account", for: .normal)
-        button.setTitleColor(.lightGray, for: .normal)
+        button.setTitleColor(.textSecondary, for: .normal)
         return button
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .black
+        view.backgroundColor = .canvas
         setupLayout()
         setupActions()
     }

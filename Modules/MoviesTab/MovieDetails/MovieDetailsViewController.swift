@@ -30,7 +30,7 @@ final class MediaDetailsViewController: UIViewController {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
         iv.clipsToBounds = true
-        iv.backgroundColor = .graphiteSunken
+        iv.backgroundColor = .surface
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
     }()
@@ -39,7 +39,7 @@ final class MediaDetailsViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 28, weight: .bold)
         label.numberOfLines = 0
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -48,7 +48,7 @@ final class MediaDetailsViewController: UIViewController {
     private let metadataLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .medium)
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.numberOfLines = 1
         label.adjustsFontSizeToFitWidth = true
         label.minimumScaleFactor = 0.8
@@ -60,7 +60,7 @@ final class MediaDetailsViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .regular)
         label.numberOfLines = 0
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -82,14 +82,14 @@ final class MediaDetailsViewController: UIViewController {
         label.font = .systemFont(ofSize: 22, weight: .semibold)
         label.text = "Trailer"
         label.numberOfLines = 0
-        label.textColor = .white
+        label.textColor = .textPrimary
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     
     private let videoPlayerView: WKWebView = {
         let webView = WKWebView()
-        webView.backgroundColor = .black
+        webView.backgroundColor = .canvas
         webView.isOpaque = false
         webView.scrollView.isScrollEnabled = false
         webView.clipsToBounds = true
@@ -100,10 +100,10 @@ final class MediaDetailsViewController: UIViewController {
 
     private let trailerPlaceholderView: UIView = {
         let container = UIView()
-        container.backgroundColor = .graphiteSunken
+        container.backgroundColor = .surface
         container.layer.cornerRadius = 12
         container.layer.borderWidth = 1
-        container.layer.borderColor = UIColor.alabasterGray.withAlphaComponent(0.16).cgColor
+        container.layer.borderColor = UIColor.textPrimary.withAlphaComponent(0.16).cgColor
         container.isHidden = true
         container.translatesAutoresizingMaskIntoConstraints = false
 
@@ -112,18 +112,18 @@ final class MediaDetailsViewController: UIViewController {
             withConfiguration: UIImage.SymbolConfiguration(pointSize: 40, weight: .regular)
         )
         let iconView = UIImageView(image: symbol)
-        iconView.tintColor = .appDustyDenim
+        iconView.tintColor = .textSecondary
         iconView.contentMode = .scaleAspectFit
 
         let titleLabel = UILabel()
         titleLabel.text = "No trailer yet"
         titleLabel.font = .systemFont(ofSize: 19, weight: .semibold)
-        titleLabel.textColor = .alabasterGray
+        titleLabel.textColor = .textPrimary
 
         let subtitleLabel = UILabel()
         subtitleLabel.text = "We’ll show it here as soon as one is available"
         subtitleLabel.font = .systemFont(ofSize: 14, weight: .regular)
-        subtitleLabel.textColor = .appDustyDenim
+        subtitleLabel.textColor = .textSecondary
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
 
@@ -146,7 +146,7 @@ final class MediaDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .graphite
+        view.backgroundColor = .canvas
         castCollectionView.delegate = self
         castCollectionView.dataSource = self
         castCollectionView.register(ActorsCell.self, forCellWithReuseIdentifier: ActorsCell.identifier)
@@ -156,6 +156,15 @@ final class MediaDetailsViewController: UIViewController {
         viewModel.fetchTrailer()
         viewModel.fetchActors()
         viewModel.fetchGenre()
+
+        // The star is rasterised with the accent baked in, so it can't repaint itself
+        // when the theme changes the way a plain tinted view would.
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(themeDidChange),
+            name: ThemeManager.themeDidChangeNotification,
+            object: nil
+        )
     }
     
     private func configure() {
@@ -190,6 +199,10 @@ final class MediaDetailsViewController: UIViewController {
         viewModel.onGenreUpdate = { [weak self] in
             DispatchQueue.main.async { self?.renderMetadata() }
         }
+    }
+
+    @objc private func themeDidChange() {
+        renderMetadata()
     }
 
     private func renderMetadata() {
@@ -281,9 +294,9 @@ final class MediaDetailsViewController: UIViewController {
     private static func opaqueBarAppearance() -> UINavigationBarAppearance {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .graphite
+        appearance.backgroundColor = .canvas
         appearance.shadowColor = .clear
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.textPrimary]
         return appearance
     }
 
@@ -293,7 +306,7 @@ final class MediaDetailsViewController: UIViewController {
         bar.standardAppearance = appearance
         bar.scrollEdgeAppearance = appearance
         bar.compactAppearance = appearance
-        bar.tintColor = .white
+        bar.tintColor = .textPrimary
         // The title only earns its place once the poster (which carries the name) is gone.
         navigationItem.title = collapsed ? viewModel.title : nil
     }
