@@ -10,6 +10,14 @@ import Foundation
 //MARK: - Struct
 struct MovieResponse: Codable {
     let results: [Media]
+    /// TMDB caps paging at 500; without this the grid kept requesting pages forever.
+    let totalPages: Int?
+    let totalResults: Int?
+}
+
+struct MediaPage {
+    let items: [Media]
+    let isLastPage: Bool
 }
 
 struct VideoResponse: Codable {
@@ -195,66 +203,44 @@ final class NetworkService {
         }.resume()
     }
     
-    //TODO: Complete the logic of search
-    func fetchDiscoverMovies(category: String, value: String, page: Int, completion: @escaping ([Media]) -> Void) {
-        var endpoint = "/discover/movie?page=\(page)"
-        if category == "Release date" {
-            endpoint += "&primary_release_year=\(value)"
-        } else if category == "Genre, country or language" {
-            let genreId = getTMDBGenreId(for: value)
-            endpoint += "&with_genres=\(genreId)"
-        } else if category == "Service" {
-            let providerId = getProviderId(for: value)
-            endpoint += "&with_watch_providers=\(providerId)&watch_region=US"
+    func fetchDiscover(query: DiscoverQuery, page: Int, completion: @escaping (MediaPage?) -> Void) {
+        var components = URLComponents(string: baseURL + query.path)
+        components?.queryItems = query.queryItems + [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "api_key", value: apiKey),
+            URLQueryItem(name: "language", value: "en-US")
+        ]
+        guard let urlString = components?.url?.absoluteString else {
+            completion(nil)
+            return
         }
-        let urlString = "\(baseURL)\(endpoint)&api_key=\(apiKey)&language=en-US"
         performRequest(urlString: urlString) { (result: MovieResponse?) in
-            completion(result?.results ?? [])
+            completion(result.map { Self.page(from: $0, requested: page) })
         }
     }
 
-    private func getTMDBGenreId(for name: String) -> String {
-        switch name.lowercased() {
-        case "action": return "28"
-        case "comedy": return "35"
-        case "drama": return "18"
-        case "sci-fi": return "878"
-        case "thriller": return "53"
-        case "horror": return "27"
-        case "animation": return "16"
-        default: return ""
+    /// TMDB refuses pages past 500 regardless of `total_pages`.
+    private static func page(from response: MovieResponse, requested: Int) -> MediaPage {
+        let cap = min(response.totalPages ?? requested, 500)
+        return MediaPage(items: response.results, isLastPage: requested >= cap || response.results.isEmpty)
+    }
+
+    func searchMovies(query: String, page: Int, completion: @escaping (MediaPage?) -> Void) {
+        var components = URLComponents(string: baseURL + "/search/movie")
+        components?.queryItems = [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "api_key", value: apiKey),
+            URLQueryItem(name: "language", value: "en-US"),
+            URLQueryItem(name: "include_adult", value: "false")
+        ]
+        guard let urlString = components?.url?.absoluteString else {
+            completion(nil)
+            return
+        }
+        performRequest(urlString: urlString) { (result: MovieResponse?) in
+            completion(result.map { Self.page(from: $0, requested: page) })
         }
     }
 
-    private func getProviderId(for name: String) -> String {
-        switch name.lowercased() {
-        case "netflix": return "8"
-        case "hbo max": return "384"
-        case "apple tv+": return "350"
-        case "disney+": return "337"
-        case "amazon prime": return "9"
-        default: return ""
-        }
-    }
-    
-    func searchMovies(query: String, completion: @escaping ([Media]) -> Void) {
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        let urlString = "\(baseURL)/search/movie?api_key=\(apiKey)&query=\(encoded)"
-        guard let url = URL(string: urlString) else { return }
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else {
-                DispatchQueue.main.async { completion([]) }
-                return
-            }
-            do {
-                let decoder = JSONDecoder()
-                decoder.keyDecodingStrategy = .convertFromSnakeCase
-                let result = try decoder.decode(MovieResponse.self, from: data)
-                DispatchQueue.main.async { completion(result.results) }
-            } catch {
-                DispatchQueue.main.async { completion([]) }
-            }
-        }.resume()
-    }
-    
 }

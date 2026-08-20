@@ -9,6 +9,11 @@ import UIKit
 
 final class SearchMoviesController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     private let viewModel = SearchMoviesViewModel()
+
+    /// Typing fires a request per keystroke otherwise — this collapses a burst of them
+    /// into one call once the user pauses.
+    private var searchDebounce: DispatchWorkItem?
+    private static let debounceInterval: TimeInterval = 0.4
     private let chevronImage = UIImage(systemName: "chevron.right")
     private let tableView: UITableView = {
         let tv = UITableView(frame: .zero, style: .grouped)
@@ -23,6 +28,7 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         super.viewDidLoad()
         view.backgroundColor = .canvas
         setupNavigationBar()
+        setupSearch()
         setupUI()
     }
     
@@ -41,6 +47,31 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
         navigationController?.navigationBar.tintColor = .textPrimary
     }
     
+    private func setupSearch() {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search films"
+        searchController.searchBar.delegate = self
+        searchController.searchBar.searchTextField.textColor = .textPrimary
+        searchController.searchBar.tintColor = .textPrimary
+
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = false
+        definesPresentationContext = true
+    }
+
+    private func showResults(for query: String) {
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else { return }
+
+        // Don't stack duplicate result screens if the user keeps typing after a push.
+        if let top = navigationController?.topViewController, top !== self { return }
+
+        let resultsVC = MovieGridViewController(source: .search(trimmed), title: "“\(trimmed)”")
+        navigationController?.pushViewController(resultsVC, animated: true)
+    }
+
     private func setupUI() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -104,5 +135,25 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
             print("Лог действия [\(title)]: \(description)")
 
         }
+    }
+}
+
+extension SearchMoviesController: UISearchResultsUpdating, UISearchBarDelegate {
+
+    func updateSearchResults(for searchController: UISearchController) {
+        searchDebounce?.cancel()
+        guard let text = searchController.searchBar.text,
+              text.trimmingCharacters(in: .whitespacesAndNewlines).count >= 2 else { return }
+
+        let work = DispatchWorkItem { [weak self] in self?.showResults(for: text) }
+        searchDebounce = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.debounceInterval, execute: work)
+    }
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        // An explicit return shouldn't wait out the debounce.
+        searchDebounce?.cancel()
+        searchBar.resignFirstResponder()
+        showResults(for: searchBar.text ?? "")
     }
 }
