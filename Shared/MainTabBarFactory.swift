@@ -11,7 +11,7 @@ enum MainTabBarFactory {
         // Scoped to the signed-in account, and built here because the tab bar is
         // recreated on every sign-in — so switching accounts can never leave one
         // user looking at another's diary.
-        let reviewStore = LocalReviewStore(userID: Auth.auth().currentUser?.uid)
+        let reviewStore = ReviewStoreFactory.makeStore()
 
         let mediaListVC = MediaListViewController()
         mediaListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)

@@ -9,6 +9,7 @@ import Foundation
 
 final class MediaDetailsViewModel {
     private let media: Media
+    private let reviewStore: ReviewStoring
     var onVideoUpdate: ((String?) -> Void)?
     var onActorsUpdate: (() -> Void)?
     var actors: [Actor] = []
@@ -30,6 +31,52 @@ final class MediaDetailsViewModel {
     private(set) var genreName: String?
     var onGenreUpdate: (() -> Void)?
 
+    // MARK: - The user's own review
+
+    /// Nil until `loadReview` has answered, and nil after it if they haven't
+    /// written one.
+    private(set) var existingReview: Review?
+    var onReviewUpdate: (() -> Void)?
+
+    func loadReview() {
+        reviewStore.fetchReview(forTMDBID: media.id) { [weak self] result in
+            guard let self = self else { return }
+            // A read failure here is not worth an alert on a screen the user came to
+            // for the film: the card just stays empty and they can still write one.
+            self.existingReview = (try? result.get()) ?? nil
+            self.onReviewUpdate?()
+        }
+    }
+
+    func saveReview(score: Int, text: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Reusing the existing id and createdAt keeps this the same record the Reviews
+        // tab already lists, instead of adding a second entry for the same film.
+        let review: Review
+        if let existing = existingReview {
+            review = Review(
+                id: existing.id,
+                filmTitle: existing.filmTitle,
+                filmYear: existing.filmYear,
+                tmdbID: existing.tmdbID,
+                posterPath: existing.posterPath,
+                score: score,
+                reviewText: trimmed,
+                createdAt: existing.createdAt
+            )
+        } else {
+            review = Review(from: media, score: score, reviewText: trimmed)
+        }
+
+        reviewStore.save(review) { [weak self] result in
+            if case .success = result {
+                self?.existingReview = review
+            }
+            completion(result)
+        }
+    }
+
     var castPlaceholderTitle: String {
         didFailToLoadActors ? "Couldn't load the cast" : "No cast information"
     }
@@ -48,8 +95,9 @@ final class MediaDetailsViewModel {
         }
     }
 
-    init(media: Media) {
+    init(media: Media, reviewStore: ReviewStoring = ReviewStoreFactory.makeStore()) {
         self.media = media
+        self.reviewStore = reviewStore
     }
 
     func youtubeRequest(for key: String) -> URLRequest? {

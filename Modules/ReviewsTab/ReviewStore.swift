@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseAuth
 
 /// Where a user's reviews live.
 ///
@@ -22,6 +23,32 @@ protocol ReviewStoring: AnyObject {
     /// Inserts, or replaces the existing review with the same `id`.
     func save(_ review: Review, completion: @escaping (Result<Void, Error>) -> Void)
     func delete(_ reviewID: UUID, completion: @escaping (Result<Void, Error>) -> Void)
+}
+
+extension ReviewStoring {
+
+    /// The user's review of one catalogue title, if they've written one.
+    ///
+    /// Defaulted rather than required: the local store answers it by filtering what it
+    /// already reads off disk, while a Firestore backend can override it with a real
+    /// indexed query instead of pulling the whole diary down to find one entry.
+    func fetchReview(forTMDBID tmdbID: Int, completion: @escaping (Result<Review?, Error>) -> Void) {
+        fetchAll { result in
+            completion(result.map { reviews in
+                reviews.first { $0.tmdbID == tmdbID }
+            })
+        }
+    }
+}
+
+/// The one place that decides which `ReviewStoring` the app runs on.
+///
+/// Both the Reviews tab and the details screen come through here, so moving the app to
+/// Firestore is a change to this function rather than a hunt through call sites.
+enum ReviewStoreFactory {
+    static func makeStore() -> ReviewStoring {
+        LocalReviewStore(userID: Auth.auth().currentUser?.uid)
+    }
 }
 
 /// Reviews as a JSON file in Documents, scoped to one signed-in account.

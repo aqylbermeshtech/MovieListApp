@@ -14,6 +14,8 @@ final class MediaDetailsViewController: UIViewController {
     private let scrollView = UIScrollView()
     /// True once the poster has scrolled up behind the navigation bar.
     private var isBarCollapsed = false
+    /// How much of the scroll view the keyboard currently covers.
+    private var keyboardOverlap: CGFloat = 0
 
     init(viewModel: MediaDetailsViewModel) {
         self.viewModel = viewModel
@@ -77,6 +79,21 @@ final class MediaDetailsViewController: UIViewController {
         return cv
     }()
     
+    private let reviewLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 22, weight: .semibold)
+        label.text = "Your Review"
+        label.textColor = .textPrimary
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let miniReviewView: MiniReviewView = {
+        let view = MiniReviewView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
     private let videoLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .semibold)
@@ -218,6 +235,18 @@ final class MediaDetailsViewController: UIViewController {
             name: ThemeManager.themeDidChangeNotification,
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillChangeFrame),
+            name: UIResponder.keyboardWillChangeFrameNotification,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(keyboardWillHide),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil
+        )
     }
     
     private func configure() {
@@ -253,6 +282,27 @@ final class MediaDetailsViewController: UIViewController {
         }
         viewModel.onGenreUpdate = { [weak self] in
             DispatchQueue.main.async { self?.renderMetadata() }
+        }
+        viewModel.onReviewUpdate = { [weak self] in
+            guard let self = self else { return }
+            // Don't yank the field out from under someone mid-sentence if a reload
+            // lands while they're typing.
+            guard !self.miniReviewView.isEditingOpinion else { return }
+            self.miniReviewView.configure(with: self.viewModel.existingReview)
+        }
+
+        miniReviewView.onSave = { [weak self] score, text in
+            guard let self = self else { return }
+            self.miniReviewView.setSaving(true)
+            self.viewModel.saveReview(score: score, text: text) { result in
+                self.miniReviewView.setSaving(false)
+                switch result {
+                case .success:
+                    self.miniReviewView.showSaved()
+                case let .failure(error):
+                    self.miniReviewView.showError(error.localizedDescription)
+                }
+            }
         }
     }
 
@@ -294,6 +344,8 @@ final class MediaDetailsViewController: UIViewController {
             titleLabel,
             metadataLabel,
             descriptionLabel,
+            reviewLabel,
+            miniReviewView,
             castCollectionView,
             castPlaceholderView,
             videoLabel,
@@ -304,6 +356,7 @@ final class MediaDetailsViewController: UIViewController {
         stack.axis = .vertical
         stack.spacing = 20
         stack.setCustomSpacing(10, after: titleLabel)
+        stack.setCustomSpacing(10, after: reviewLabel)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(scrollView)
@@ -343,11 +396,39 @@ final class MediaDetailsViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // contentInsetAdjustmentBehavior is .never so the poster can reach the top, which
-        // also means the tab bar's inset has to be applied by hand at the bottom.
-        if scrollView.contentInset.bottom != view.safeAreaInsets.bottom {
-            scrollView.contentInset.bottom = view.safeAreaInsets.bottom
+        updateScrollInsets()
+    }
+
+    /// contentInsetAdjustmentBehavior is .never so the poster can reach the top, which
+    /// means the bottom inset is ours to maintain — for the tab bar normally, and for
+    /// the keyboard while the review card is being typed into. One place decides, so
+    /// layout and the keyboard can't overwrite each other.
+    private func updateScrollInsets() {
+        let bottom = max(view.safeAreaInsets.bottom, keyboardOverlap)
+        guard scrollView.contentInset.bottom != bottom else { return }
+        scrollView.contentInset.bottom = bottom
+        scrollView.verticalScrollIndicatorInsets.bottom = bottom
+    }
+
+    @objc private func keyboardWillChangeFrame(_ notification: Notification) {
+        guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        else { return }
+        keyboardOverlap = max(0, view.bounds.maxY - view.convert(frame, from: nil).minY)
+        updateScrollInsets()
+
+        // The card sits well down a long scrolling screen, so raising the inset isn't
+        // enough on its own — it also has to be brought above the keyboard. The frame
+        // has to be converted first: the card lives inside the stack view, so its own
+        // `frame` is in the stack's coordinates and would scroll somewhere arbitrary.
+        if miniReviewView.isEditingOpinion {
+            let rect = scrollView.convert(miniReviewView.bounds, from: miniReviewView)
+            scrollView.scrollRectToVisible(rect.insetBy(dx: 0, dy: -12), animated: true)
         }
+    }
+
+    @objc private func keyboardWillHide() {
+        keyboardOverlap = 0
+        updateScrollInsets()
     }
 
     // MARK: - Navigation bar
@@ -382,6 +463,9 @@ final class MediaDetailsViewController: UIViewController {
         super.viewWillAppear(animated)
         // Transparent over the poster; collapses to opaque as it scrolls away.
         applyBarAppearance(collapsed: isBarCollapsed)
+        // Cheap, and it keeps the review card in step with edits made from the
+        // Reviews tab since this screen was last on top.
+        viewModel.loadReview()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
