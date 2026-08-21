@@ -1,6 +1,6 @@
 //
 //  Video.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 23.03.2026.
 //

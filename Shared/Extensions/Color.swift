@@ -1,6 +1,6 @@
 //
 //  Color.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 22.03.2026.
 //

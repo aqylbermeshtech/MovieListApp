@@ -1,6 +1,6 @@
 //
 //  SubcategoryViewController.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 21.05.2026.
 //

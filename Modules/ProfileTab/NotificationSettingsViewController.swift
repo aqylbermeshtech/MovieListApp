@@ -1,6 +1,6 @@
 //
 //  NotificationSettingsViewController.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 18.08.2026.
 //
@@ -111,8 +111,8 @@ extension NotificationSettingsViewController: UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         guard section == 0 else { return nil }
         switch authorizationStatus {
-        case .notDetermined: return "Tap to let MovieListApp send notifications."
-        case .denied: return "Notifications are turned off for MovieListApp. Tap to open Settings."
+        case .notDetermined: return "Tap to let Movter send notifications."
+        case .denied: return "Notifications are turned off for Movter. Tap to open Settings."
         default: return "These choices only apply while notifications are allowed."
         }
     }

@@ -1,6 +1,6 @@
 //
 //  LoginViewController.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 03.07.2026.
 //

@@ -1,6 +1,6 @@
 //
 //  ThemeManager.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 02.07.2026.
 //

@@ -1,6 +1,6 @@
 //
 //  MovieGridViewController.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 27.06.2026.
 //

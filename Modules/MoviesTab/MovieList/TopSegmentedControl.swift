@@ -1,6 +1,6 @@
 //
 //  TopSegmentedControl.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 02.05.2026.
 //

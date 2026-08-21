@@ -1,6 +1,6 @@
 //
 //  ImageLoader.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 24.03.2026.
 //

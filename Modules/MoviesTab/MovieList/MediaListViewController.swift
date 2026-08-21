@@ -1,6 +1,6 @@
 //
-//  MovieListViewController.swift
-//  MovieListApp
+//  MediaListViewController.swift
+//  Movter
 //
 //  Created by Nurtore on 24.03.2026.
 //

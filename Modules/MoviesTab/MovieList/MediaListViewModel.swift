@@ -1,6 +1,6 @@
 //
-//  MovieListViewModel.swift
-//  MovieListApp
+//  MediaListViewModel.swift
+//  Movter
 //
 //  Created by Nurtore on 24.03.2026.
 //

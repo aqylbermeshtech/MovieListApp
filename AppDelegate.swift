@@ -1,6 +1,6 @@
 //
 //  AppDelegate.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 13.03.2026.
 //

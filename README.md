@@ -1,6 +1,6 @@
-# MovieListApp
+# Movter
 
-MovieListApp is an iOS application that allows users to browse trending movies, view detailed information, and explore related content using The Movie Database (TMDb) API.
+Movter is an iOS application that allows users to browse trending movies, view detailed information, and explore related content using The Movie Database (TMDb) API.
 
 <div align="center">
   <video src="https://github.com/user-attachments/assets/7db2906a-34fa-4262-97bc-6d1617b28575" controls width="300"></video>
@@ -86,13 +86,13 @@ git clone https://github.com/iblamenooo/MovieListApp.git
 
 2. Add the two local-only files that are intentionally not committed (they hold secrets):
 
-   - **`Config/Secrets.xcconfig`** — create this file next to `MovieListApp.xcodeproj` (i.e. a
-     sibling of the `MovieListApp` and `MovieListApp.xcodeproj` folders, *not* inside either of
-     them) by copying `MovieListApp/Config/Secrets.xcconfig.example` and filling in your own
+   - **`Config/Secrets.xcconfig`** — create this file next to `Movter.xcodeproj` (i.e. a
+     sibling of the `Movter` and `Movter.xcodeproj` folders, *not* inside either of
+     them) by copying `Movter/Config/Secrets.xcconfig.example` and filling in your own
      [TMDb](https://www.themoviedb.org/settings/api) and
      [Guardian](https://open-platform.theguardian.com/access/) API keys.
    - **`GoogleService-Info.plist`** — download this from the
      [Firebase console](https://console.firebase.google.com/) for the `movielistapp-13a53`
-     project and place it in `MovieListApp/`.
+     project and place it in `Movter/`.
 
-3. Open `MovieListApp.xcodeproj` in Xcode and run.
+3. Open `Movter.xcodeproj` in Xcode and run.

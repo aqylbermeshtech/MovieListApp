@@ -1,6 +1,6 @@
 //
 //  ProfileViewController.swift
-//  MovieListApp
+//  Movter
 //
 //  Created by Nurtore on 01.07.2026.
 //
