@@ -80,6 +80,15 @@ final class MediaDetailsViewController: UIViewController {
         return cv
     }()
     
+    private let castLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 22, weight: .semibold)
+        label.text = "Cast"
+        label.textColor = .textPrimary
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
     private let reviewLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 22, weight: .semibold)
@@ -356,6 +365,7 @@ final class MediaDetailsViewController: UIViewController {
             descriptionView,
             reviewLabel,
             miniReviewView,
+            castLabel,
             castCollectionView,
             castPlaceholderView,
             videoLabel,
@@ -367,6 +377,8 @@ final class MediaDetailsViewController: UIViewController {
         stack.spacing = 20
         stack.setCustomSpacing(10, after: titleLabel)
         stack.setCustomSpacing(10, after: reviewLabel)
+        stack.setCustomSpacing(10, after: castLabel)
+        stack.setCustomSpacing(10, after: videoLabel)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(scrollView)
