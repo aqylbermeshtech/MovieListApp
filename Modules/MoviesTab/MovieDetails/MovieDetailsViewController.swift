@@ -386,6 +386,17 @@ final class MediaDetailsViewController: UIViewController {
         // Content starts at the very top of the screen, under the status and nav bars.
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.delegate = self
+        // Dragging the page puts the keyboard away, which is the gesture people reach
+        // for first on a scrolling screen.
+        scrollView.keyboardDismissMode = .interactive
+
+        // ...and so does tapping anywhere off the review card. `cancelsTouchesInView`
+        // stays false so this never swallows a tap meant for the synopsis, a cast
+        // member, or the trailer.
+        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardOnTap))
+        dismissTap.cancelsTouchesInView = false
+        dismissTap.delegate = self
+        scrollView.addGestureRecognizer(dismissTap)
         scrollView.addSubview(imageView)
         scrollView.addSubview(stack)
 
@@ -446,6 +457,10 @@ final class MediaDetailsViewController: UIViewController {
             let rect = scrollView.convert(miniReviewView.bounds, from: miniReviewView)
             scrollView.scrollRectToVisible(rect.insetBy(dx: 0, dy: -12), animated: true)
         }
+    }
+
+    @objc private func dismissKeyboardOnTap() {
+        view.endEditing(true)
     }
 
     @objc private func keyboardWillHide() {
@@ -536,5 +551,22 @@ extension MediaDetailsViewController: UICollectionViewDelegate, UICollectionView
         let actorVM = ActorViewModel(actorId: actor.id, name: actor.name)
         let actorVC = ActorViewController(viewModel: actorVM)
         navigationController?.pushViewController(actorVC, animated: true)
+    }
+}
+
+
+// MARK: - Tap-to-dismiss
+
+extension MediaDetailsViewController: UIGestureRecognizerDelegate {
+
+    /// Ignore taps that land inside the review card. Without this, tapping the opinion
+    /// field would end editing in the same gesture that was meant to begin it, and the
+    /// keyboard would never come up.
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldReceive touch: UITouch
+    ) -> Bool {
+        guard let touched = touch.view else { return true }
+        return !touched.isDescendant(of: miniReviewView)
     }
 }

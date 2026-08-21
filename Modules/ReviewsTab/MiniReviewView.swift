@@ -55,17 +55,10 @@ final class MiniReviewView: UIView {
         textView.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         textView.delegate = self
         textView.translatesAutoresizingMaskIntoConstraints = false
-
-        // A text view has no return-key dismissal, so without this the keyboard can
-        // strand the user halfway down a scrolling details screen.
-        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: 0, height: 44))
-        toolbar.barStyle = .black
-        toolbar.items = [
-            UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-            UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(dismissKeyboard))
-        ]
-        toolbar.sizeToFit()
-        textView.inputAccessoryView = toolbar
+        // No input accessory bar on purpose. The system `.done` item renders as a blue
+        // circular tick, which is the only blue on a screen with none — and the owning
+        // screen already offers three ways out of the keyboard: drag the page, tap
+        // outside the card, or hit Save, which resigns first responder itself.
         return textView
     }()
 
