@@ -167,6 +167,15 @@ final class ReviewsListViewController: UIViewController {
         presentEditor(for: nil)
     }
 
+    /// Builds a composer for a new review without presenting it, so the tab bar can
+    /// put it up over whichever tab the user was actually looking at rather than
+    /// switching here first.
+    func makeNewReviewEditor() -> ReviewEditorViewController {
+        let editor = ReviewEditorViewController(viewModel: viewModel.makeEditorViewModel(for: nil))
+        editor.onSave = { [weak self] in self?.viewModel.load() }
+        return editor
+    }
+
     private func presentEditor(for review: Review?) {
         let editorViewModel = viewModel.makeEditorViewModel(for: review)
         let editor = ReviewEditorViewController(viewModel: editorViewModel)

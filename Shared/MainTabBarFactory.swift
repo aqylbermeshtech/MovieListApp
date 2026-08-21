@@ -37,8 +37,10 @@ enum MainTabBarFactory {
         let reviewsNav = UINavigationController(rootViewController: reviewsVC)
         let profileNav = UINavigationController(rootViewController: profileVC)
 
-        let tabBar = UITabBarController()
+        let tabBar = MainTabBarController()
         tabBar.viewControllers = [movieListNav, searchMoviesNav, reviewsNav, profileNav]
+        // Choosing Reviews opens the composer first; the diary sits behind it.
+        tabBar.enableQuickReview(nav: reviewsNav, list: reviewsVC)
         return tabBar
     }
 }
