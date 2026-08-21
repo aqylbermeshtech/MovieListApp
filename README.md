@@ -92,7 +92,7 @@ git clone https://github.com/iblamenooo/Movter.git
      [TMDb](https://www.themoviedb.org/settings/api) and
      [Guardian](https://open-platform.theguardian.com/access/) API keys.
    - **`GoogleService-Info.plist`** — download this from the
-     [Firebase console](https://console.firebase.google.com/) for the `Movter-13a53`
+     [Firebase console](https://console.firebase.google.com/) for the `movielistapp-13a53`
      project and place it in `Movter/`.
 
 3. Open `Movter.xcodeproj` in Xcode and run.
