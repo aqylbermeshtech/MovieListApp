@@ -13,6 +13,11 @@ enum MainTabBarFactory {
         // user looking at another's diary.
         let reviewStore = ReviewStoreFactory.makeStore()
 
+        // Tab labels are owned here, and the root screens set `navigationItem.title`
+        // rather than `title` so they stay that way. `UIViewController.title` writes
+        // through to *both* the navigation item and the tab bar item, and it runs in
+        // viewDidLoad — after this — so a screen setting `title` would silently rename
+        // its own tab.
         let mediaListVC = MediaListViewController()
         mediaListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)
 

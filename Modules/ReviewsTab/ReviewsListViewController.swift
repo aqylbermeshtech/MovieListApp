@@ -79,7 +79,7 @@ final class ReviewsListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .canvas
-        title = "Recent reviews"
+        navigationItem.title = "Recent reviews"
         navigationController?.navigationBar.prefersLargeTitles = true
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(

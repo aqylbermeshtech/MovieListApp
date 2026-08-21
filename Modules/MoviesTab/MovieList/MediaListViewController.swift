@@ -30,7 +30,7 @@ final class MediaListViewController: UIViewController {
     }
     
     private func setupNavigationBar() {
-        title = "Movter"
+        navigationItem.title = "Movter"
         navigationController?.navigationBar.prefersLargeTitles = false
         
         let appearance = UINavigationBarAppearance()

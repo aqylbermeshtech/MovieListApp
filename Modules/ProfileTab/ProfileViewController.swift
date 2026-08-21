@@ -77,7 +77,7 @@ final class ProfileViewController: UIViewController {
     }
 
     private func setupNavigationBar() {
-        title = "Profile"
+        navigationItem.title = "Profile"
         navigationController?.navigationBar.prefersLargeTitles = false
 
         // Pin the bar to the app's own palette rather than the system's default grouped

@@ -34,7 +34,7 @@ final class SearchMoviesController: UIViewController, UITableViewDelegate, UITab
     
     //MARK: - UI
     private func setupNavigationBar() {
-        title = "Search"
+        navigationItem.title = "Search"
         navigationController?.navigationBar.prefersLargeTitles = false
         
         let appearance = UINavigationBarAppearance()
