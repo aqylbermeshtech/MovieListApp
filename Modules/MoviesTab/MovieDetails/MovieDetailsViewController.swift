@@ -58,13 +58,14 @@ final class MediaDetailsViewController: UIViewController {
         return label
     }()
 
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .regular)
-        label.numberOfLines = 0
-        label.textColor = .textPrimary
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    /// Shows the opening of the synopsis, fading out at the cut, and opens to the
+    /// full text when tapped.
+    private let descriptionView: ExpandableTextLabel = {
+        let view = ExpandableTextLabel()
+        view.font = .systemFont(ofSize: 16, weight: .regular)
+        view.collapsedLineLimit = 4
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
     private let castCollectionView: UICollectionView = {
@@ -251,7 +252,10 @@ final class MediaDetailsViewController: UIViewController {
     
     private func configure() {
         titleLabel.text = viewModel.title
-        descriptionLabel.text = viewModel.overview
+        descriptionView.text = viewModel.overview
+        // Some titles carry no synopsis at all; an empty block would just leave a gap
+        // between the metadata line and the review card.
+        descriptionView.isHidden = viewModel.overview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         renderMetadata()
 
         if let url = viewModel.largeImageURL {
@@ -289,6 +293,17 @@ final class MediaDetailsViewController: UIViewController {
             // lands while they're typing.
             guard !self.miniReviewView.isEditingOpinion else { return }
             self.miniReviewView.configure(with: self.viewModel.existingReview)
+        }
+
+        descriptionView.onToggle = { [weak self] in
+            guard let self = self else { return }
+            UIView.animate(
+                withDuration: 0.28,
+                delay: 0,
+                options: [.curveEaseInOut, .allowUserInteraction]
+            ) {
+                self.view.layoutIfNeeded()
+            }
         }
 
         miniReviewView.onSave = { [weak self] score, text in
@@ -343,7 +358,7 @@ final class MediaDetailsViewController: UIViewController {
         let stack = UIStackView(arrangedSubviews: [
             titleLabel,
             metadataLabel,
-            descriptionLabel,
+            descriptionView,
             reviewLabel,
             miniReviewView,
             castCollectionView,
