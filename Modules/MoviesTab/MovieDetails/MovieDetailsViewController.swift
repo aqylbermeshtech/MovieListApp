@@ -295,15 +295,10 @@ final class MediaDetailsViewController: UIViewController {
             self.miniReviewView.configure(with: self.viewModel.existingReview)
         }
 
+        // Called from inside the reveal animation, so the rest of the screen slides
+        // down in step with the block opening rather than snapping afterwards.
         descriptionView.onToggle = { [weak self] in
-            guard let self = self else { return }
-            UIView.animate(
-                withDuration: 0.28,
-                delay: 0,
-                options: [.curveEaseInOut, .allowUserInteraction]
-            ) {
-                self.view.layoutIfNeeded()
-            }
+            self?.view.layoutIfNeeded()
         }
 
         miniReviewView.onSave = { [weak self] score, text in
