@@ -236,3 +236,40 @@ enum RatingFormatter {
         return formatter
     }()
 }
+
+extension RatingFormatter {
+
+    /// The user's own score, as "★ 8/10".
+    ///
+    /// Kept apart from `attributedRating` on purpose: that one renders TMDB's aggregate
+    /// and has to hedge about vote counts and unreleased titles. A personal score has
+    /// none of that doubt attached to it, so it never dims and never carries a caveat.
+    static func attributedPersonalScore(
+        _ score: Int,
+        font: UIFont,
+        textColor: UIColor = .textPrimary,
+        starColor: UIColor = .accent
+    ) -> NSAttributedString {
+        let starSize = (font.pointSize * 1.05).rounded()
+
+        let attachment = NSTextAttachment()
+        attachment.image = RatingStar.image(pointSize: starSize, color: starColor)
+        attachment.bounds = CGRect(
+            x: 0,
+            y: (font.capHeight - starSize) / 2,
+            width: starSize,
+            height: starSize
+        )
+
+        let result = NSMutableAttributedString(attachment: attachment)
+        result.append(NSAttributedString(
+            string: "  \(score)",
+            attributes: [.font: font, .foregroundColor: textColor]
+        ))
+        result.append(NSAttributedString(
+            string: "/10",
+            attributes: [.font: font, .foregroundColor: UIColor.textSecondary]
+        ))
+        return result
+    }
+}
