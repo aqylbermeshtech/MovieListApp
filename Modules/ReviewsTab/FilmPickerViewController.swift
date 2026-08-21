@@ -169,12 +169,28 @@ final class FilmPickerViewController: UIViewController {
     }
 
     @objc private func cancelTapped() {
-        dismiss(animated: true)
+        close()
     }
 
     private func finish(with selection: FilmSelection) {
+        // Hand the choice back before closing, so the editor is already showing the
+        // picked film as this screen animates away rather than after it.
         onPick?(selection)
-        dismiss(animated: true)
+        close()
+    }
+
+    /// Closes the picker, whether or not the search bar is active.
+    ///
+    /// `self.dismiss` is not enough: while the search bar is active the search
+    /// controller is itself presented on top of this screen, and `dismiss` always
+    /// targets the topmost presented controller. That would tear down the search UI
+    /// and leave the picker sitting there — so selecting a film would appear to do
+    /// nothing. Dismissing from the presenter removes the search UI and the picker
+    /// together, in one animation.
+    private func close() {
+        searchController.searchBar.resignFirstResponder()
+        let presenter = presentingViewController ?? self
+        presenter.dismiss(animated: true)
     }
 }
 
