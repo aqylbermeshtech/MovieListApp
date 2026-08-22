@@ -81,7 +81,7 @@ While building this project, I improved my skills in:
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/iblamenooo/Movter.git
+git clone https://github.com/aqylbermeshtech/Movter.git
 ```
 
 2. Add the two local-only files that are intentionally not committed (they hold secrets):
