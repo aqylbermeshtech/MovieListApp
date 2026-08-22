@@ -7,10 +7,9 @@
 
 import Foundation
 
-/// What a title's score actually means. TMDB reports `vote_average: 0.0` both for a
-/// film nobody has rated and for one that hasn't been released, and reports a headline
-/// 10.0 off a single vote — so the average alone can't be trusted on its own. Resolving
-/// it against `vote_count` and the release date keeps those cases apart.
+/// What a title's score actually means. TMDB reports `vote_average: 0.0` for both
+/// unrated and unreleased titles, and a headline 10.0 off a single vote — so the
+/// average is only meaningful against `vote_count` and the release date.
 enum RatingState {
     /// Enough votes to show the score plainly.
     case rated(score: Double, votes: Int)
@@ -28,8 +27,7 @@ enum RatingState {
         let date = releaseDate.flatMap { Self.isoFormatter.date(from: $0) }
 
         guard voteCount > 0 else {
-            // No votes: a future date means "not out yet", a past date means nobody
-            // rated it, and no date at all means it's only been announced.
+            // No votes: a future or missing date means unreleased, a past one unrated.
             guard let date = date else {
                 self = .upcoming(releaseDate: nil)
                 return

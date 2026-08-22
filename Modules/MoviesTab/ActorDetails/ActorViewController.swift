@@ -106,8 +106,7 @@ final class ActorViewController: UIViewController {
 
         let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
         cv.backgroundColor = .clear
-        // The whole screen is one scroll view, so the grid lays itself out at full
-        // height instead of scrolling independently.
+        // One scroll view for the screen, so the grid lays out at full height.
         cv.isScrollEnabled = false
         cv.register(MediaCell.self, forCellWithReuseIdentifier: MediaCell.identifier)
         cv.translatesAutoresizingMaskIntoConstraints = false
@@ -156,8 +155,7 @@ final class ActorViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        // Item size depends on the grid's final width, so the content height is only
-        // knowable after layout. Guarded to avoid re-triggering layout forever.
+        // Height is only knowable after layout; guarded against a layout loop.
         let height = filmographyCollectionView.collectionViewLayout.collectionViewContentSize.height
         if abs(filmographyHeightConstraint.constant - height) > 0.5 {
             filmographyHeightConstraint.constant = height
@@ -186,8 +184,7 @@ final class ActorViewController: UIViewController {
 
         filmographyLabel.text = viewModel.filmographyCountText
         emptyFilmographyLabel.text = viewModel.emptyFilmographyText
-        // Only an actor with a genuinely empty filmography should see this — not everyone
-        // during the frame between first render and the fetch completing.
+        // Only for a genuinely empty filmography, not while the fetch is in flight.
         emptyFilmographyLabel.isHidden = !viewModel.hasLoaded || !viewModel.credits.isEmpty
         filmographyCollectionView.isHidden = viewModel.credits.isEmpty
 
@@ -198,8 +195,7 @@ final class ActorViewController: UIViewController {
                         self?.showProfilePlaceholder()
                         return
                     }
-                    // The placeholder switches to .center, so restore the fill mode or the
-                    // full-size portrait renders at native scale inside the 140pt circle.
+                    // The placeholder switches to .center; restore fill for the portrait.
                     self?.profileImageView.contentMode = .scaleAspectFill
                     self?.profileImageView.image = image
                 }
@@ -261,8 +257,8 @@ final class ActorViewController: UIViewController {
 
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false
-        // The scroll view runs to the bottom of the screen, so the tab bar's safe-area
-        // inset has to become content inset or the last grid row sits under the tab bar.
+        // Safe-area inset has to become content inset, or the last row sits under the
+        // tab bar.
         scrollView.contentInsetAdjustmentBehavior = .always
         scrollView.addSubview(stack)
         view.addSubview(loadingIndicator)
@@ -316,7 +312,7 @@ extension ActorViewController: UICollectionViewDataSource, UICollectionViewDeleg
         let columns: CGFloat = 3
         let spacing: CGFloat = 10
         let width = (collectionView.bounds.width - (columns - 1) * spacing) / columns
-        // Poster is 1.5x its width; the rest covers the two-line title and the rating.
+        // Poster is 1.5x width; the rest is the two-line title and rating.
         return CGSize(width: floor(width), height: floor(width * 1.5) + 58)
     }
 

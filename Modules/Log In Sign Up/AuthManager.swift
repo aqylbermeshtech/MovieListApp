@@ -39,10 +39,8 @@ final class AuthManager {
         }
     }
 
-    // Collapses account-existence-revealing errors into one generic message so a failed
-    // login can't be used to enumerate which emails have registered accounts. Other errors
-    // (network failure, too many requests, disabled account, ...) pass through unchanged
-    // since they aren't enumeration risks and the distinct messaging is useful to the user.
+    // Collapses credential errors into one message so a failed login can't enumerate
+    // registered emails. Other errors pass through — they leak nothing and read better.
     private static func genericLoginError(from error: Error) -> Error {
         let nsError = error as NSError
         guard let code = AuthErrorCode(rawValue: nsError.code) else { return error }

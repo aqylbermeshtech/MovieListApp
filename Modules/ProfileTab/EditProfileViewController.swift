@@ -10,7 +10,6 @@ import FirebaseAuth
 
 final class EditProfileViewController: UIViewController {
 
-    /// Called after a successful save so the Profile screen can re-read the user.
     var onSave: (() -> Void)?
 
     private static let maxNameLength = 50
@@ -134,8 +133,7 @@ final class EditProfileViewController: UIViewController {
         emailStack.spacing = 6
         emailStack.setCustomSpacing(10, after: emailValueLabel)
 
-        // A `.fill`-aligned stack stretches its arranged subviews edge to edge, which
-        // would beat the avatar's own 100pt width — so centre it inside a container.
+        // A `.fill` stack would stretch the avatar past its own 100pt width.
         let avatarContainer = UIView()
         avatarContainer.addSubview(avatarImageView)
 
@@ -185,8 +183,7 @@ final class EditProfileViewController: UIViewController {
         let isValid = !trimmedName.isEmpty && trimmedName.count <= Self.maxNameLength
         let isEnabled = isValid && hasUnsavedChanges
         saveButton.isEnabled = isEnabled
-        // Keep the disabled state readable rather than fading the whole button out —
-        // a near-invisible button reads as a rendering bug, not as "nothing to save".
+        // Disabled stays readable; a faded-out button reads as a rendering bug.
         saveButton.configuration?.baseBackgroundColor = isEnabled ? .accent : .surface
         saveButton.configuration?.baseForegroundColor = isEnabled ? .onAccent : .textSecondary
     }

@@ -24,9 +24,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
         self.window = window
         window.tintColor = ThemeManager.shared.currentTheme.mainColor
-        // Every screen is designed dark — black/graphite backgrounds, white text. Without
-        // this the app inherits the system appearance, so semantic colours like .label and
-        // .secondarySystemBackground resolve light and render invisible or glaringly wrong.
+        // Every screen is designed dark; without this, semantic colours like `.label`
+        // resolve light and render invisible.
         window.overrideUserInterfaceStyle = .dark
         window.makeKeyAndVisible()
     }

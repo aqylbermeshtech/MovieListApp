@@ -70,7 +70,7 @@ final class ProfileViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Coming back from Edit Profile, the Firebase user has new values to show.
+        // Edit Profile may have changed the Firebase user.
         configureData()
         viewModel.rebuildSections()
         tableView.reloadData()
@@ -80,8 +80,7 @@ final class ProfileViewController: UIViewController {
         navigationItem.title = "Profile"
         navigationController?.navigationBar.prefersLargeTitles = false
 
-        // Pin the bar to the app's own palette rather than the system's default grouped
-        // background, so it matches the graphite content underneath it.
+        // The system's grouped background doesn't match the graphite content.
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = .canvas
@@ -137,8 +136,8 @@ final class ProfileViewController: UIViewController {
     }
 
     private func confirmLogout() {
-        // `.alert`, not `.actionSheet`: an action sheet presented as a centred popover
-        // drops its cancel action, leaving a destructive confirm with no visible way out.
+        // `.alert`, not `.actionSheet`: as a centred popover a sheet drops its cancel
+        // action, leaving a destructive confirm with no way out.
         let alert = UIAlertController(
             title: "Log Out",
             message: "You'll need to sign in again to get back to your profile.",
@@ -172,8 +171,8 @@ final class ProfileViewController: UIViewController {
             preferredStyle: .actionSheet
         )
 
-        // The active theme is already shown as the row's detail text, so the sheet
-        // doesn't need a checkmark — which would mean poking a private UIAlertAction key.
+        // No checkmark: the row's detail text already shows the active theme, and
+        // marking one would mean poking a private UIAlertAction key.
         for theme in [AppTheme.mono, .amber, .slate] {
             alert.addAction(UIAlertAction(title: theme.displayName, style: .default) { [weak self] _ in
                 guard let self = self else { return }
@@ -269,8 +268,7 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
         let isDestructive = option.type == .logout
         let tint: UIColor = isDestructive ? .destructive : .textPrimary
 
-        // `valueCell` right-aligns the secondary text (the current theme) and, unlike an
-        // accessoryView, leaves the disclosure chevron in place.
+        // `valueCell` right-aligns the detail text and keeps the chevron.
         var content = option.detail == nil
             ? cell.defaultContentConfiguration()
             : UIListContentConfiguration.valueCell()

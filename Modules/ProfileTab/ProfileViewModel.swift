@@ -31,8 +31,7 @@ struct ProfileSection {
 
 final class ProfileViewModel {
 
-    /// The app has no privacy policy of its own yet; this points at the data provider's.
-    /// Swap in your own URL when you publish one.
+    /// Points at the data provider's until the app publishes its own.
     static let privacyPolicyURL = URL(string: "https://www.themoviedb.org/privacy-policy")!
 
     var onNavigationRequired: ((ProfileOptionType) -> Void)?
@@ -44,7 +43,7 @@ final class ProfileViewModel {
     var userName: String {
         let displayName = user?.displayName?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let displayName = displayName, !displayName.isEmpty { return displayName }
-        // Better than a generic "User": derive something recognisable from the address.
+        // Something recognisable, rather than a generic "User".
         if let emailName = user?.email?.split(separator: "@").first { return String(emailName) }
         return "Your Profile"
     }
@@ -55,7 +54,7 @@ final class ProfileViewModel {
         InitialsAvatar.image(name: user?.displayName, email: user?.email, size: 200)
     }
 
-    /// "Member since August 2026" — real account metadata rather than invented copy.
+    /// "Member since August 2026", from real account metadata.
     var memberSinceText: String? {
         guard let created = user?.metadata.creationDate else { return nil }
         let formatter = DateFormatter()

@@ -16,11 +16,9 @@ struct Media: Codable {
     let releaseDate: String?
     let firstAirDate: String?
     let voteAverage: Double
-    /// Optional with a nil fallback: TMDB omits it on some payloads, and a missing
-    /// key on a non-optional field fails the whole response's decode.
+    /// Optional: TMDB omits it on some payloads, and that would fail the whole decode.
     let voteCount: Int?
-    /// Present on list endpoints (`genre_ids`); the per-title detail endpoint returns
-    /// full objects under a different key, which the app doesn't call.
+    /// List endpoints only; the detail endpoint returns full objects under another key.
     let genreIds: [Int]?
 
     var displayName: String {

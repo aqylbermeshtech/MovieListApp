@@ -7,14 +7,11 @@
 
 import UIKit
 
-/// The app's rating star, drawn as a vector rather than shipped as an image asset or
-/// borrowed from the emoji font: it tints from the palette, stays crisp at any size,
-/// and looks identical on every OS version.
+/// The rating star, drawn as a vector rather than an asset or the emoji glyph, so it
+/// tints from the palette and looks identical on every OS version.
 enum RatingStar {
 
-    /// Ratio of the inner (valley) radius to the outer (tip) radius. The textbook
-    /// pentagram value is 0.382, which goes spindly at label sizes — 0.47 keeps the
-    /// arms thick enough to read at 13pt.
+    /// Inner/outer radius ratio. The textbook 0.382 goes spindly at label sizes.
     private static let innerRadiusRatio: CGFloat = 0.47
 
     private static let cache = NSCache<NSString, UIImage>()
@@ -30,8 +27,7 @@ enum RatingStar {
             color.setFill()
             color.setStroke()
             path.fill()
-            // Stroking the same path with a round join softens the five tips and the
-            // five valleys, which stops them aliasing into fuzz when drawn small.
+            // Round join softens the tips, which otherwise alias into fuzz when small.
             path.lineWidth = pointSize * 0.07
             path.lineJoinStyle = .round
             path.stroke()
@@ -71,8 +67,7 @@ enum RatingStar {
 
 enum RatingFormatter {
 
-    /// Renders a rating the way its confidence deserves. `compact` drops the vote count
-    /// for narrow contexts like a grid cell, where "· 4 votes" would truncate the score.
+    /// `compact` drops the vote count for narrow contexts like a grid cell.
     static func attributedRating(
         _ state: RatingState,
         font: UIFont,
@@ -85,7 +80,7 @@ enum RatingFormatter {
             return scoreLine(score: score, font: font, textColor: textColor, starColor: starColor)
 
         case let .provisional(score, votes):
-            // Dimmed so a 10.0 off one vote doesn't read as loudly as a real 10.0.
+            // Dimmed so a 10.0 off one vote doesn't read as loudly as a real one.
             let line = NSMutableAttributedString(attributedString: scoreLine(
                 score: score,
                 font: font,
@@ -115,8 +110,7 @@ enum RatingFormatter {
     }
 
 
-    /// The details-screen header line: "★ 7.9/10 · 2026 · Science Fiction".
-    /// Any piece with no data is dropped along with its separator.
+    /// "★ 7.9/10 · 2026 · Science Fiction"; missing pieces drop with their separator.
     static func metadataLine(
         state: RatingState,
         year: String?,
@@ -137,7 +131,7 @@ enum RatingFormatter {
         case .unrated:
             chips.append(label("Not rated", font: font))
         case .upcoming:
-            // The year chip already communicates "not out yet"; a second marker is noise.
+            // The year already says "not out yet".
             break
         }
 

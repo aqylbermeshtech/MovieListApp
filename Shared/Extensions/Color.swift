@@ -29,8 +29,7 @@ extension UIColor {
 
     // MARK: - Neutral ramp
     //
-    // Five steps carry the entire interface. Posters are the only saturated thing on
-    // screen, so nothing in the chrome competes with them.
+    // Five steps carry the whole interface; posters are the only saturated thing.
 
     /// App background.
     static let canvas        = UIColor(hex: "0A0A0B")
@@ -46,8 +45,7 @@ extension UIColor {
     /// Muted red for destructive actions — the one place colour still means "careful".
     static let destructive   = UIColor(hex: "D96A5A")
 
-    /// The single accent. Follows the selected theme, so ratings, the active tab and
-    /// every other emphasis point stay in step with one another.
+    /// The single accent, following the selected theme.
     static var accent: UIColor { ThemeManager.shared.currentTheme.mainColor }
 
     /// Drawn on top of `accent`. Every theme accent is light, so this is the canvas.

@@ -10,7 +10,7 @@ import Foundation
 final class ActorViewModel {
 
     private let actorId: Int
-    /// Name of the tapped cast member, so the header can render before the fetch lands.
+    /// Lets the header render before the fetch lands.
     private let fallbackName: String
 
     private(set) var details: PersonDetails?
@@ -129,8 +129,7 @@ final class ActorViewModel {
         }
     }
 
-    /// An actor can be credited twice on one title (two roles, or a movie counted in
-    /// both `cast` groupings), so collapse by media id and show newest work first.
+    /// An actor can be credited twice on one title, so collapse by media id.
     private static func sortedUniqueCredits(from credits: [PersonCredit]) -> [PersonCredit] {
         var seen = Set<Int>()
         return credits

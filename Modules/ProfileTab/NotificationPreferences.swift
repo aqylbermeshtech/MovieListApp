@@ -51,8 +51,7 @@ final class NotificationPreferencesStore {
 
     func isEnabled(_ preference: NotificationPreference) -> Bool {
         let key = keyPrefix + preference.rawValue
-        // `bool(forKey:)` can't distinguish "off" from "never set", so check presence
-        // first or every default-on toggle would read as off on a fresh install.
+        // `bool(forKey:)` can't tell "off" from "never set", so check presence first.
         guard defaults.object(forKey: key) != nil else { return preference.defaultValue }
         return defaults.bool(forKey: key)
     }

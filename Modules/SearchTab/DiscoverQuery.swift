@@ -7,13 +7,8 @@
 
 import Foundation
 
-/// A browse selection turned into a real TMDB request.
-///
-/// This replaces the previous string matching, which understood only three of the nine
-/// categories and let every other selection fall through to an unfiltered
-/// `/discover/movie` — the same million-title list dressed up under six different names.
-/// Anything genuinely unsupported now returns nil so the screen can say so, rather than
-/// silently showing the whole catalogue.
+/// A browse selection turned into a real TMDB request. Unsupported selections return
+/// nil so the screen can say so, rather than showing an unfiltered catalogue.
 struct DiscoverQuery {
 
     let path: String
@@ -46,8 +41,7 @@ struct DiscoverQuery {
     // MARK: - Categories
 
     private static func releaseDate(_ value: String) -> DiscoverQuery? {
-        // A decade has to become a date range: TMDB coerces "2020s" to the year 2020,
-        // so the old code quietly returned one year where the user asked for ten.
+        // TMDB coerces "2020s" to the year 2020, so a decade needs an explicit range.
         if value.hasSuffix("s"), let start = Int(value.dropLast()) {
             return discover([
                 "primary_release_date.gte": "\(start)-01-01",
@@ -137,9 +131,7 @@ struct DiscoverQuery {
             return discover(["with_companies": "420", "sort_by": "popularity.desc"])
         case "Christopher Nolan Collection":
             return discover(["with_crew": "525", "sort_by": "primary_release_date.desc"])
-        // "Oscar Winners" and "Cannes Festival" have no TMDB filter behind them —
-        // they'd need a curated list, so they report as unavailable instead of
-        // returning an unfiltered catalogue.
+        // No TMDB filter behind these; they'd need a curated list.
         default: return nil
         }
     }
@@ -147,8 +139,7 @@ struct DiscoverQuery {
     private static func official(_ value: String) -> DiscoverQuery? {
         switch value {
         case "TMDB Top Rated": return DiscoverQuery("/movie/top_rated")
-        // "Letterboxd Top 250" isn't TMDB data, and "App Users Choice" needs a backend
-        // this app doesn't have.
+        // Not TMDB data, and no backend of our own to serve it.
         default: return nil
         }
     }

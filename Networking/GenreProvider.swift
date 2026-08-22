@@ -15,9 +15,8 @@ struct GenreListResponse: Codable {
     let genres: [Genre]
 }
 
-/// Resolves the `genre_ids` that list endpoints return into names. TMDB's genre table
-/// is small and effectively static, so it's fetched once per media type and kept for
-/// the lifetime of the process rather than re-requested per title.
+/// Resolves `genre_ids` into names. TMDB's genre table is small and static, so it's
+/// fetched once per media type and kept for the process lifetime.
 final class GenreProvider {
 
     static let shared = GenreProvider()
@@ -27,8 +26,7 @@ final class GenreProvider {
     private var inFlight: [Bool: [(  [Int: String]) -> Void]] = [:]
     private let queue = DispatchQueue(label: "GenreProvider", attributes: .concurrent)
 
-    /// The first genre name for these ids — the reference design shows a single genre,
-    /// and TMDB orders them most-representative first.
+    /// First name only; TMDB orders them most-representative first.
     func primaryGenreName(for ids: [Int]?, isTV: Bool, completion: @escaping (String?) -> Void) {
         guard let ids = ids, !ids.isEmpty else {
             completion(nil)

@@ -7,14 +7,12 @@
 
 import UIKit
 
-// 1. Описываем доступные темы или палитры
 enum AppTheme: String {
     case mono
     case amber
     case slate
 
-    /// The one saturated-ish colour in the interface. All three are deliberately
-    /// low-chroma: posters supply the colour, the chrome stays out of the way.
+    /// Deliberately low-chroma: posters supply the colour, the chrome stays back.
     var mainColor: UIColor {
         switch self {
         case .mono:  return UIColor(hex: "F5F5F7")
@@ -32,11 +30,9 @@ enum AppTheme: String {
     }
 }
 
-// 2. Сам менеджер
 final class ThemeManager {
     static let shared = ThemeManager()
     
-    // Уведомление для всего приложения о смене темы
     static let themeDidChangeNotification = Notification.Name("ThemeDidChangeNotification")
     
     private let themeKey = "selected_app_theme"
@@ -44,7 +40,6 @@ final class ThemeManager {
     private(set) var currentTheme: AppTheme = .mono
     
     private init() {
-        // Загружаем сохраненную тему при старте
         if let savedRaw = UserDefaults.standard.string(forKey: themeKey),
            let savedTheme = AppTheme(rawValue: savedRaw) {
             self.currentTheme = savedTheme
@@ -56,13 +51,11 @@ final class ThemeManager {
         UserDefaults.standard.set(theme.rawValue, forKey: themeKey)
         applyToConnectedScenes()
 
-        // Оповещаем все живые экраны, что цвета изменились
         NotificationCenter.default.post(name: ThemeManager.themeDidChangeNotification, object: nil)
     }
 
-    /// Tinting the window is what actually makes a theme visible: it cascades to the tab
-    /// bar selection, bar buttons, switches and every other control that inherits tint.
-    /// Without this the picker saved a value that changed nothing on screen.
+    /// Tinting the window is what makes a theme visible — it cascades to the tab bar,
+    /// bar buttons and every other control that inherits tint.
     func applyToConnectedScenes() {
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }

@@ -8,8 +8,7 @@
 import Foundation
 
 extension Array {
-    /// Bounds-checked lookup, so a stale index — a reused control's tag, a table row
-    /// read after the data changed — returns nil instead of trapping.
+    /// Bounds-checked lookup: a stale index returns nil instead of trapping.
     subscript(safe index: Int) -> Element? {
         indices.contains(index) ? self[index] : nil
     }

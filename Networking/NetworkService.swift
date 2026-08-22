@@ -34,8 +34,8 @@ final class NetworkService {
     private let baseURL = "https://api.themoviedb.org/3"
     private let guardianBaseURL = "https://content.guardianapis.com"
 
-    // Injected at build time from Config/Secrets.xcconfig (gitignored, kept out of the app source
-    // tree) — see Movter/Config/Secrets.xcconfig.example for setup instructions.
+    // Injected at build time from Config/Secrets.xcconfig (gitignored); see
+    // Movter/Config/Secrets.xcconfig.example.
     private let apiKey = NetworkService.infoPlistValue(for: "TMDB_API_KEY")
     private let guardianApiKey = NetworkService.infoPlistValue(for: "GUARDIAN_API_KEY")
 

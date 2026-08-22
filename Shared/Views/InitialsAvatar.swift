@@ -7,8 +7,7 @@
 
 import UIKit
 
-/// Draws a per-user avatar from their initials — a filled ring on a plain surface,
-/// with no colour of its own. Identity comes from the letters, not from a hue.
+/// Per-user avatar drawn from initials, with no colour of its own.
 enum InitialsAvatar {
 
     static func image(name: String?, email: String?, size: CGFloat) -> UIImage {
@@ -19,7 +18,7 @@ enum InitialsAvatar {
             UIColor.surface.setFill()
             context.cgContext.fillEllipse(in: CGRect(x: 0, y: 0, width: size, height: size))
 
-            // A hairline ring keeps the circle readable where surface and canvas are close.
+            // Keeps the circle readable where surface and canvas are close.
             let inset = max(1, size * 0.006)
             UIColor.hairline.setStroke()
             context.cgContext.setLineWidth(inset * 2)
