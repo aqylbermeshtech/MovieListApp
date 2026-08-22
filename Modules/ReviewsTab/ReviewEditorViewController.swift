@@ -307,8 +307,10 @@ final class ReviewEditorViewController: UIViewController {
             self.setSaving(false)
             switch result {
             case .success:
-                self.onSave?()
-                self.dismiss(animated: true)
+                // After dismissal, not before: a caller showing a confirmation would
+                // otherwise put it up behind this sheet.
+                let onSave = self.onSave
+                self.dismiss(animated: true) { onSave?() }
             case let .failure(error):
                 let alert = UIAlertController(
                     title: "Couldn't save",

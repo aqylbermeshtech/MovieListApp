@@ -33,7 +33,16 @@ final class MainTabBarController: UITabBarController, UITabBarControllerDelegate
 
     private func presentQuickReview() {
         guard let reviewsList = reviewsList, presentedViewController == nil else { return }
-        let editor = reviewsList.makeNewReviewEditor()
+        // Saving from here leaves no trace on screen — the sheet closes onto the tab the
+        // user was already on — so the confirmation is the only signal it worked.
+        let editor = reviewsList.makeNewReviewEditor { [weak self] in
+            guard let self = self else { return }
+            ToastView.show(
+                "Added to your reviews",
+                in: self.view,
+                bottomInset: self.tabBar.frame.height
+            )
+        }
         present(UINavigationController(rootViewController: editor), animated: true)
     }
 }
