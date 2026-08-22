@@ -9,6 +9,7 @@ import UIKit
 import FirebaseAuth
 
 enum ProfileOptionType {
+    case reviews
     case editProfile
     case notifications
     case privacyPolicy
@@ -73,6 +74,7 @@ final class ProfileViewModel {
     func rebuildSections() {
         sections = [
             ProfileSection(header: "ACCOUNT", options: [
+                ProfileOption(title: "Recent Reviews", iconName: "star.bubble", type: .reviews),
                 ProfileOption(title: "Edit Profile", iconName: "person.crop.circle", type: .editProfile)
             ]),
             ProfileSection(header: "PREFERENCES", options: [

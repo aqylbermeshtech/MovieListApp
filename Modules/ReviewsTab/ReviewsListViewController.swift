@@ -81,6 +81,9 @@ final class ReviewsListViewController: UIViewController {
         view.backgroundColor = .canvas
         navigationItem.title = "Recent reviews"
         navigationController?.navigationBar.prefersLargeTitles = true
+        // Explicit rather than inherited: pushed onto a stack whose previous screen
+        // opted out, `.automatic` would inherit that and render inline.
+        navigationItem.largeTitleDisplayMode = .always
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,

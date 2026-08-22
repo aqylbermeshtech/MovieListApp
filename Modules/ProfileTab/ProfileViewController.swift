@@ -79,6 +79,9 @@ final class ProfileViewController: UIViewController {
     private func setupNavigationBar() {
         navigationItem.title = "Profile"
         navigationController?.navigationBar.prefersLargeTitles = false
+        // Pushing the reviews list turns large titles on for this whole stack, and
+        // `prefersLargeTitles` above only runs once — so opt this screen out by mode.
+        navigationItem.largeTitleDisplayMode = .never
 
         // The system's grouped background doesn't match the graphite content.
         let appearance = UINavigationBarAppearance()
@@ -105,6 +108,8 @@ final class ProfileViewController: UIViewController {
         viewModel.onNavigationRequired = { [weak self] type in
             guard let self = self else { return }
             switch type {
+            case .reviews:
+                self.showReviews()
             case .editProfile:
                 self.showEditProfile()
             case .notifications:
@@ -119,6 +124,13 @@ final class ProfileViewController: UIViewController {
                 self.confirmLogout()
             }
         }
+    }
+
+    private func showReviews() {
+        let reviewsVC = ReviewsListViewController(
+            viewModel: ReviewsListViewModel(store: ReviewStoreFactory.makeStore())
+        )
+        navigationController?.pushViewController(reviewsVC, animated: true)
     }
 
     private func showEditProfile() {
