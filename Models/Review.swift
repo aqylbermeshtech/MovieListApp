@@ -7,18 +7,14 @@
 
 import Foundation
 
-/// One film the user has watched, scored and written about.
+/// One film the user has scored and written about.
 ///
-/// Deliberately not a `Media`: that struct is TMDB's view of a title and is rebuilt
-/// from the network on every launch. This is the user's own record and has to stand
-/// on its own, so it keeps a flat snapshot of the few fields it needs to render.
-/// `tmdbID` and `posterPath` are nil for a film typed in by hand — the catalogue
-/// doesn't know about every student film or unreleased cut somebody wants to log.
+/// Deliberately not a `Media`: this has to render without the network, so it keeps a
+/// flat snapshot. `tmdbID` and `posterPath` are nil for hand-typed entries.
 struct Review: Codable, Equatable {
 
-    /// Whole numbers only. A personal score is a judgement, not an average, so this
-    /// doesn't reuse `RatingState`: there are no vote counts to weigh against it and
-    /// no provisional/unrated cases to disambiguate. It's just what the user thought.
+    /// Whole numbers. Not `RatingState` — a personal score has no vote count and no
+    /// provisional case.
     static let scoreRange = 1...10
 
     let id: UUID
@@ -53,8 +49,7 @@ struct Review: Codable, Equatable {
         self.updatedAt = updatedAt
     }
 
-    /// Seeds a review from a catalogue title, carrying over everything needed to render
-    /// the entry later without a second network call.
+    /// Snapshots a catalogue title so the entry renders later without a network call.
     init(from media: Media, score: Int, reviewText: String = "") {
         self.init(
             filmTitle: media.displayName,
@@ -66,15 +61,13 @@ struct Review: Codable, Equatable {
         )
     }
 
-    /// Matches `Media.fullPosterURL` so a review cell and a catalogue cell pull the
-    /// same cached image rather than fetching the poster twice at different widths.
+    /// Same width as `Media.fullPosterURL`, so both share one cache entry.
     var posterURL: URL? {
         guard let posterPath = posterPath else { return nil }
         return URL(string: "https://image.tmdb.org/t/p/w500\(posterPath)")
     }
 
-    /// "Dune  ·  2021" — the year is dropped along with its separator when unknown,
-    /// which is the common case for hand-typed entries.
+    /// "Dune  ·  2021", or just the title when the year is unknown.
     var titleWithYear: String {
         guard let filmYear = filmYear, !filmYear.isEmpty else { return filmTitle }
         return "\(filmTitle)  ·  \(filmYear)"

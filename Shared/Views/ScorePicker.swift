@@ -9,13 +9,8 @@ import UIKit
 
 /// The 1–10 control the user scores a film with.
 ///
-/// Ten stars rather than a slider or a number field: it reuses `RatingStar`, so a score
-/// the user gives reads in the same visual language as the scores the app shows them,
-/// and the whole range is visible at once instead of hidden behind a drag.
-///
-/// `value == 0` means "not scored yet" and is the starting state — nothing is
-/// pre-selected, so saving a score is always a deliberate act rather than an accepted
-/// default. `Review` only ever persists 1...10.
+/// `value == 0` means "not scored yet" and is the starting state, so a score is always
+/// a deliberate choice. `Review` only ever persists 1...10.
 final class ScorePicker: UIControl {
 
     private static let starCount = 10
@@ -40,8 +35,7 @@ final class ScorePicker: UIControl {
         return stack
     }()
 
-    /// Tracks the size the current star images were drawn at, so `layoutSubviews`
-    /// only redraws them when the row actually changes width.
+    /// Size the current images were drawn at; redraw only when it changes.
     private var renderedStarSize: CGFloat = 0
 
     override init(frame: CGRect) {
@@ -83,8 +77,7 @@ final class ScorePicker: UIControl {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        // Ten stars have to fit the narrowest phone without colliding, so the star is
-        // sized from the slot it gets rather than pinned to one hard-coded point size.
+        // Sized from its slot so ten stars fit the narrowest phone.
         let slotWidth = bounds.width / CGFloat(Self.starCount)
         let starSize = min(Self.maximumStarSize, max(14, slotWidth - 6)).rounded()
         guard starSize != renderedStarSize else { return }
@@ -97,8 +90,7 @@ final class ScorePicker: UIControl {
     private func updateStars() {
         guard renderedStarSize > 0 else { return }
         let filled = RatingStar.image(pointSize: renderedStarSize, color: .accent)
-        // The unscored track has to read as "tap me", not as a rendering glitch, so the
-        // empty stars sit a step above the hairline colour used for separators.
+        // A step above `hairline`, so the empty track reads as tappable.
         let empty = RatingStar.image(
             pointSize: renderedStarSize,
             color: UIColor.textSecondary.withAlphaComponent(0.3)
@@ -109,8 +101,7 @@ final class ScorePicker: UIControl {
     }
 
     @objc private func themeDidChange() {
-        // `.accent` resolves through ThemeManager, so the filled stars are stale the
-        // moment the user picks a different theme behind this screen.
+        // `.accent` is rasterised into the image, so it can't repaint itself.
         updateStars()
     }
 
@@ -126,8 +117,7 @@ final class ScorePicker: UIControl {
         return true
     }
 
-    /// Dragging across the row scrubs the score, which is how every rating control on
-    /// the platform behaves — tapping alone would make an 8 a careful aiming exercise.
+    /// Drag scrubs the score; tapping alone would make an 8 an aiming exercise.
     private func updateValue(for touch: UITouch) {
         let x = touch.location(in: self).x
         let slotWidth = bounds.width / CGFloat(Self.starCount)

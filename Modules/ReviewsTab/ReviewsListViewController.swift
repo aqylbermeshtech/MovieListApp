@@ -7,7 +7,7 @@
 
 import UIKit
 
-/// The user's own diary: every film they've scored and written about, newest first.
+/// Every film the user has scored, newest first.
 final class ReviewsListViewController: UIViewController {
 
     private let viewModel: ReviewsListViewModel
@@ -120,7 +120,6 @@ final class ReviewsListViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        // Cheap, and it keeps the list honest if a review was edited from elsewhere.
         viewModel.load()
     }
 
@@ -132,9 +131,8 @@ final class ReviewsListViewController: UIViewController {
         updateSummaryHeader()
     }
 
-    /// The running total rides above the rows rather than in `navigationItem.prompt`:
-    /// a prompt sits outside the navigation bar entirely, which pushes the large title
-    /// down and reads like a system warning strip rather than part of the list.
+    /// A table header rather than `navigationItem.prompt`, which sits outside the bar
+    /// and pushes the large title down.
     private func updateSummaryHeader() {
         guard let summary = viewModel.summaryText else {
             tableView.tableHeaderView = nil
@@ -154,8 +152,7 @@ final class ReviewsListViewController: UIViewController {
             return view
         }()
 
-        // A table header view is laid out from its frame, not its constraints, so it
-        // has to be sized by hand or it collapses to zero height and never appears.
+        // Header views size from their frame, not constraints.
         container.frame = CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 40)
         container.layoutIfNeeded()
         tableView.tableHeaderView = container
@@ -167,9 +164,7 @@ final class ReviewsListViewController: UIViewController {
         presentEditor(for: nil)
     }
 
-    /// Builds a composer for a new review without presenting it, so the tab bar can
-    /// put it up over whichever tab the user was actually looking at rather than
-    /// switching here first.
+    /// Built but not presented, so the tab bar can raise it over another tab.
     func makeNewReviewEditor() -> ReviewEditorViewController {
         let editor = ReviewEditorViewController(viewModel: viewModel.makeEditorViewModel(for: nil))
         editor.onSave = { [weak self] in self?.viewModel.load() }
@@ -227,8 +222,7 @@ extension ReviewsListViewController: UITableViewDataSource, UITableViewDelegate 
         return UISwipeActionsConfiguration(actions: [delete])
     }
 
-    /// A written review is real work to lose and there's no undo behind it, so the
-    /// swipe asks before it deletes.
+    /// No undo behind this, so the swipe confirms first.
     private func confirmDelete(at indexPath: IndexPath, completion: @escaping (Bool) -> Void) {
         guard let review = viewModel.review(at: indexPath) else {
             completion(false)

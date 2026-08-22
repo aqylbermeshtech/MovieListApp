@@ -7,8 +7,7 @@
 
 import UIKit
 
-/// One diary entry: poster, film, the score the user gave it, and the opening of what
-/// they wrote.
+/// One diary entry: poster, film, score, and the opening of the review.
 final class ReviewCell: UITableViewCell {
 
     static let identifier = "ReviewCell"
@@ -80,8 +79,7 @@ final class ReviewCell: UITableViewCell {
             posterView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 14),
             posterView.widthAnchor.constraint(equalToConstant: 48),
             posterView.heightAnchor.constraint(equalToConstant: 72),
-            // Lets the poster define the minimum height without fighting a taller
-            // text column on entries with a long title and a two-line snippet.
+            // Poster sets a minimum height without fighting a taller text column.
             posterView.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -14),
 
             textStack.leadingAnchor.constraint(equalTo: posterView.trailingAnchor, constant: 12),
@@ -116,8 +114,7 @@ final class ReviewCell: UITableViewCell {
         dateLabel.text = Self.dateText(for: review.updatedAt)
 
         guard let url = review.posterURL else {
-            // Hand-typed entries have no poster; a film glyph reads better than a
-            // blank well that looks like an image failed to load.
+            // Hand-typed entries have no poster.
             posterView.contentMode = .center
             posterView.image = UIImage(systemName: "film")
             return
@@ -130,10 +127,8 @@ final class ReviewCell: UITableViewCell {
         }
     }
 
-    /// `RelativeDateTimeFormatter` renders an interval of roughly zero as "in 0
-    /// seconds" — future tense on a review that was just saved. Anything inside the
-    /// last minute is "Just now" instead, which is both correct and what the user
-    /// expects to see the instant they hit save.
+    /// `RelativeDateTimeFormatter` renders a near-zero interval as "in 0 seconds" —
+    /// future tense on a review just saved.
     private static func dateText(for date: Date) -> String {
         let secondsAgo = Date().timeIntervalSince(date)
         guard secondsAgo >= 60 else { return "Just now" }

@@ -8,16 +8,11 @@ import FirebaseAuth
 
 enum MainTabBarFactory {
     static func makeTabBar() -> UITabBarController {
-        // Scoped to the signed-in account, and built here because the tab bar is
-        // recreated on every sign-in — so switching accounts can never leave one
-        // user looking at another's diary.
+        // Built per sign-in, so the store is always scoped to the current account.
         let reviewStore = ReviewStoreFactory.makeStore()
 
-        // Tab labels are owned here, and the root screens set `navigationItem.title`
-        // rather than `title` so they stay that way. `UIViewController.title` writes
-        // through to *both* the navigation item and the tab bar item, and it runs in
-        // viewDidLoad — after this — so a screen setting `title` would silently rename
-        // its own tab.
+        // Tab labels live here. Root screens must set `navigationItem.title`, never
+        // `title` — that writes through to the tab bar item too, and runs later.
         let mediaListVC = MediaListViewController()
         mediaListVC.tabBarItem = UITabBarItem(title: "Movies", image: UIImage(systemName: "film"), tag: 0)
 
@@ -39,7 +34,6 @@ enum MainTabBarFactory {
 
         let tabBar = MainTabBarController()
         tabBar.viewControllers = [movieListNav, searchMoviesNav, reviewsNav, profileNav]
-        // Choosing Reviews opens the composer first; the diary sits behind it.
         tabBar.enableQuickReview(nav: reviewsNav, list: reviewsVC)
         return tabBar
     }

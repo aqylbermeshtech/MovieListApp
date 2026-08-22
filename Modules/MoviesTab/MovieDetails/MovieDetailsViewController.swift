@@ -58,8 +58,6 @@ final class MediaDetailsViewController: UIViewController {
         return label
     }()
 
-    /// Shows the opening of the synopsis, fading out at the cut, and opens to the
-    /// full text when tapped.
     private let descriptionView: ExpandableTextLabel = {
         let view = ExpandableTextLabel()
         view.font = .systemFont(ofSize: 16, weight: .regular)
@@ -262,8 +260,6 @@ final class MediaDetailsViewController: UIViewController {
     private func configure() {
         titleLabel.text = viewModel.title
         descriptionView.text = viewModel.overview
-        // Some titles carry no synopsis at all; an empty block would just leave a gap
-        // between the metadata line and the review card.
         descriptionView.isHidden = viewModel.overview.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         renderMetadata()
 
@@ -298,14 +294,12 @@ final class MediaDetailsViewController: UIViewController {
         }
         viewModel.onReviewUpdate = { [weak self] in
             guard let self = self else { return }
-            // Don't yank the field out from under someone mid-sentence if a reload
-            // lands while they're typing.
+            // Don't overwrite the field mid-sentence if a reload lands while typing.
             guard !self.miniReviewView.isEditingOpinion else { return }
             self.miniReviewView.configure(with: self.viewModel.existingReview)
         }
 
-        // Called from inside the reveal animation, so the rest of the screen slides
-        // down in step with the block opening rather than snapping afterwards.
+        // Runs inside the reveal animation so the rest of the screen moves in step.
         descriptionView.onToggle = { [weak self] in
             self?.view.layoutIfNeeded()
         }
@@ -386,13 +380,10 @@ final class MediaDetailsViewController: UIViewController {
         // Content starts at the very top of the screen, under the status and nav bars.
         scrollView.contentInsetAdjustmentBehavior = .never
         scrollView.delegate = self
-        // Dragging the page puts the keyboard away, which is the gesture people reach
-        // for first on a scrolling screen.
         scrollView.keyboardDismissMode = .interactive
 
-        // ...and so does tapping anywhere off the review card. `cancelsTouchesInView`
-        // stays false so this never swallows a tap meant for the synopsis, a cast
-        // member, or the trailer.
+        // `cancelsTouchesInView` stays false so this never swallows a tap meant for
+        // the synopsis, a cast member, or the trailer.
         let dismissTap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboardOnTap))
         dismissTap.cancelsTouchesInView = false
         dismissTap.delegate = self
@@ -432,10 +423,8 @@ final class MediaDetailsViewController: UIViewController {
         updateScrollInsets()
     }
 
-    /// contentInsetAdjustmentBehavior is .never so the poster can reach the top, which
-    /// means the bottom inset is ours to maintain — for the tab bar normally, and for
-    /// the keyboard while the review card is being typed into. One place decides, so
-    /// layout and the keyboard can't overwrite each other.
+    /// `contentInsetAdjustmentBehavior` is `.never`, so the bottom inset is ours to
+    /// maintain. One owner, so layout and the keyboard can't overwrite each other.
     private func updateScrollInsets() {
         let bottom = max(view.safeAreaInsets.bottom, keyboardOverlap)
         guard scrollView.contentInset.bottom != bottom else { return }
@@ -449,10 +438,8 @@ final class MediaDetailsViewController: UIViewController {
         keyboardOverlap = max(0, view.bounds.maxY - view.convert(frame, from: nil).minY)
         updateScrollInsets()
 
-        // The card sits well down a long scrolling screen, so raising the inset isn't
-        // enough on its own — it also has to be brought above the keyboard. The frame
-        // has to be converted first: the card lives inside the stack view, so its own
-        // `frame` is in the stack's coordinates and would scroll somewhere arbitrary.
+        // Converted first: the card lives in the stack view, so its own `frame` is in
+        // the stack's coordinates and would scroll somewhere arbitrary.
         if miniReviewView.isEditingOpinion {
             let rect = scrollView.convert(miniReviewView.bounds, from: miniReviewView)
             scrollView.scrollRectToVisible(rect.insetBy(dx: 0, dy: -12), animated: true)
@@ -500,8 +487,7 @@ final class MediaDetailsViewController: UIViewController {
         super.viewWillAppear(animated)
         // Transparent over the poster; collapses to opaque as it scrolls away.
         applyBarAppearance(collapsed: isBarCollapsed)
-        // Cheap, and it keeps the review card in step with edits made from the
-        // Reviews tab since this screen was last on top.
+        // Keeps the review card in step with edits made elsewhere.
         viewModel.loadReview()
     }
 
@@ -559,9 +545,8 @@ extension MediaDetailsViewController: UICollectionViewDelegate, UICollectionView
 
 extension MediaDetailsViewController: UIGestureRecognizerDelegate {
 
-    /// Ignore taps that land inside the review card. Without this, tapping the opinion
-    /// field would end editing in the same gesture that was meant to begin it, and the
-    /// keyboard would never come up.
+    /// Ignore taps inside the review card, or tapping the opinion field would end
+    /// editing in the same gesture meant to begin it.
     func gestureRecognizer(
         _ gestureRecognizer: UIGestureRecognizer,
         shouldReceive touch: UITouch

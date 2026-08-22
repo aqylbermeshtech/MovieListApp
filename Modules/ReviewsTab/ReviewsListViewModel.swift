@@ -9,7 +9,6 @@ import UIKit
 
 final class ReviewsListViewModel {
 
-    /// Fired whenever `reviews` changes, including the first load.
     var onChange: (() -> Void)?
     var onError: ((String) -> Void)?
 
@@ -51,8 +50,7 @@ final class ReviewsListViewModel {
             completion(false)
             return
         }
-        // Drop it from the local copy first so the row animates out immediately; a
-        // failed write reloads from disk and puts it back rather than lying about it.
+        // Optimistic: a failed write reloads from disk and puts the row back.
         reviews.remove(at: indexPath.row)
 
         store.delete(review.id) { [weak self] result in

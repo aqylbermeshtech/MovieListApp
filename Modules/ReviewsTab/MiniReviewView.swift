@@ -7,12 +7,8 @@
 
 import UIKit
 
-/// A compact score-and-opinion card for the details screen.
-///
-/// The short form of `ReviewEditorViewController`: no film picker, because the film is
-/// whatever screen you're standing on, and no navigation, because rating something you
-/// are already looking at shouldn't cost a modal. It writes to the same store, so an
-/// opinion left here is the same record the Reviews tab lists and edits.
+/// Compact score-and-opinion card for the details screen: the short form of
+/// `ReviewEditorViewController`, writing the same record to the same store.
 final class MiniReviewView: UIView {
 
     /// Score and opinion text, once the user commits them.
@@ -55,10 +51,8 @@ final class MiniReviewView: UIView {
         textView.textContainerInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
         textView.delegate = self
         textView.translatesAutoresizingMaskIntoConstraints = false
-        // No input accessory bar on purpose. The system `.done` item renders as a blue
-        // circular tick, which is the only blue on a screen with none — and the owning
-        // screen already offers three ways out of the keyboard: drag the page, tap
-        // outside the card, or hit Save, which resigns first responder itself.
+        // No accessory bar: the system Done item renders as a blue tick, and the owning
+        // screen already dismisses on drag, on tap-outside, and on Save.
         return textView
     }()
 
@@ -124,8 +118,7 @@ final class MiniReviewView: UIView {
             stack.trailingAnchor.constraint(equalTo: card.trailingAnchor, constant: -14),
             stack.bottomAnchor.constraint(equalTo: card.bottomAnchor, constant: -14),
 
-            // Three lines or so: enough for a real thought, short enough that it reads
-            // as a note rather than the full editor.
+            // ~3 lines: a note, not the full editor.
             textView.heightAnchor.constraint(equalToConstant: 76),
             placeholderLabel.topAnchor.constraint(equalTo: textView.topAnchor, constant: 10),
             placeholderLabel.leadingAnchor.constraint(equalTo: textView.leadingAnchor, constant: 15)
@@ -145,7 +138,7 @@ final class MiniReviewView: UIView {
 
     // MARK: - Configuration
 
-    /// Shows the user's existing review, or an empty card if they haven't written one.
+    /// Shows an existing review, or an empty card.
     func configure(with review: Review?) {
         hasExistingReview = review != nil
         scorePicker.value = review?.score ?? 0
@@ -154,7 +147,6 @@ final class MiniReviewView: UIView {
         render()
     }
 
-    /// The text view is the only thing here that takes the keyboard.
     var isEditingOpinion: Bool { textView.isFirstResponder }
 
     // MARK: - State
@@ -166,7 +158,7 @@ final class MiniReviewView: UIView {
 
         placeholderLabel.isHidden = !textView.text.isEmpty
 
-        // Same rule as the full editor: a score is required, the words are optional.
+        // Same rule as the full editor: score required, words optional.
         let canSave = Review.scoreRange.contains(score)
         saveButton.isEnabled = canSave
         saveButton.configuration?.title = hasExistingReview ? "Update Review" : "Save Review"
@@ -197,8 +189,7 @@ final class MiniReviewView: UIView {
     // MARK: - Actions
 
     @objc private func scoreChanged() {
-        // Any change invalidates a previous "Saved" note — it no longer describes
-        // what's on screen.
+        // A change invalidates the "Saved" note.
         statusLabel.text = nil
         render()
     }

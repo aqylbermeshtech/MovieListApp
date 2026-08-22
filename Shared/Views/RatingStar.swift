@@ -239,11 +239,8 @@ enum RatingFormatter {
 
 extension RatingFormatter {
 
-    /// The user's own score, as "★ 8/10".
-    ///
-    /// Kept apart from `attributedRating` on purpose: that one renders TMDB's aggregate
-    /// and has to hedge about vote counts and unreleased titles. A personal score has
-    /// none of that doubt attached to it, so it never dims and never carries a caveat.
+    /// The user's own score, as "★ 8/10". Unlike `attributedRating` it never dims —
+    /// a personal score has no vote count to hedge about.
     static func attributedPersonalScore(
         _ score: Int,
         font: UIFont,

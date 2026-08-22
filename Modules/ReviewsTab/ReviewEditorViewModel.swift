@@ -7,9 +7,8 @@
 
 import Foundation
 
-/// Backs both halves of the editor's job: composing a new review and correcting an
-/// existing one. Keeping them in one type means the validation rules can't drift apart
-/// — an edit that clears the score has to be refused exactly as a new one would be.
+/// Backs both composing a new review and editing an existing one, so the validation
+/// rules can't drift apart.
 final class ReviewEditorViewModel {
 
     enum Mode {
@@ -69,8 +68,6 @@ final class ReviewEditorViewModel {
         guard hasFilm else { return "Search the catalogue, or add one by hand" }
         var parts: [String] = []
         if let filmYear = filmYear, !filmYear.isEmpty { parts.append(filmYear) }
-        // Worth surfacing: a hand-typed entry has no poster and no link back to the
-        // catalogue, and the user should be able to see which kind they created.
         parts.append(tmdbID == nil ? "Added manually" : "From catalogue")
         return parts.joined(separator: "  ·  ")
     }
@@ -81,15 +78,12 @@ final class ReviewEditorViewModel {
 
     var remainingCharactersText: String? {
         let remaining = Self.maxReviewLength - reviewText.count
-        // Only worth showing when it starts to matter — a counter sitting at 1,987 is
-        // noise on every screen the user opens.
+        // Only once it starts to matter.
         guard remaining <= 200 else { return nil }
         return "\(remaining) characters left"
     }
 
-    /// A film and a score are the record; the written review is optional. Plenty of
-    /// people log a score the night they watch something and write it up later, and
-    /// refusing to save that would just push them to type a placeholder character.
+    /// A film and a score are the record; the written review is optional.
     var canSave: Bool {
         hasFilm && Review.scoreRange.contains(score)
     }
@@ -126,8 +120,7 @@ final class ReviewEditorViewModel {
                 reviewText: reviewText.trimmingCharacters(in: .whitespacesAndNewlines)
             )
         case let .edit(existing):
-            // Reuses the original id and createdAt, so an edit updates the entry in
-            // place instead of quietly leaving a duplicate behind.
+            // Same id and createdAt, so an edit updates in place.
             review = Review(
                 id: existing.id,
                 filmTitle: filmTitle,

@@ -7,12 +7,8 @@
 
 import UIKit
 
-/// The tab bar, with one piece of behaviour of its own: the Reviews tab is an action
-/// rather than a destination.
-///
-/// Choosing it doesn't switch tabs. It raises the composer over whatever you were
-/// looking at, and closing the composer puts you back exactly where you were — the tab
-/// bar never moves. Nothing about logging a film should cost you your place.
+/// Tab bar where the Reviews tab composes instead of navigating: it opens the review
+/// sheet over the current tab and leaves the selection untouched.
 final class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
 
     private weak var reviewsNav: UIViewController?
@@ -32,8 +28,6 @@ final class MainTabBarController: UITabBarController, UITabBarControllerDelegate
             return true
         }
         presentQuickReview()
-        // Veto the selection: the sheet goes up over the tab the user is already on,
-        // and that tab is still there when the sheet comes down.
         return false
     }
 

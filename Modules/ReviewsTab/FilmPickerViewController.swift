@@ -7,18 +7,14 @@
 
 import UIKit
 
-/// What the user settled on: a real catalogue title, or a name they typed because the
-/// catalogue didn't have it.
+/// A catalogue title, or a name typed by hand.
 enum FilmSelection {
     case catalogue(Media)
     case manual(title: String)
 }
 
-/// Search TMDB for the film being reviewed, with a hand-typed fallback.
-///
-/// The fallback isn't a nicety: TMDB doesn't carry festival cuts, student films or
-/// anything unreleased under the name people know it by, and a diary that refuses to
-/// record those is a diary people stop using.
+/// Search TMDB for the film being reviewed, with a hand-typed fallback for titles the
+/// catalogue doesn't carry.
 final class FilmPickerViewController: UIViewController {
 
     var onPick: ((FilmSelection) -> Void)?
@@ -30,8 +26,7 @@ final class FilmPickerViewController: UIViewController {
     private var pendingSearch: DispatchWorkItem?
     private var isSearching = false
 
-    /// Bumped on every keystroke. A slow response for "du" must not overwrite the
-    /// results for "dune" just because it landed later.
+    /// Bumped per keystroke so a slow response can't overwrite a newer one.
     private var currentSearchToken = 0
 
     private let statusLabel: UILabel = {
@@ -127,7 +122,7 @@ final class FilmPickerViewController: UIViewController {
             return
         }
 
-        // A request per keystroke would burn the API budget and land out of order.
+        // Debounced: one request per keystroke would burn the API budget.
         let work = DispatchWorkItem { [weak self] in self?.performSearch(query) }
         pendingSearch = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.35, execute: work)
@@ -163,8 +158,6 @@ final class FilmPickerViewController: UIViewController {
         } else {
             statusLabel.text = nil
         }
-        // No directional hint here: the manual row sits at the top of the table, so
-        // "add it by hand below" would point the user the wrong way.
         statusLabel.isHidden = statusLabel.text == nil
     }
 
@@ -173,20 +166,13 @@ final class FilmPickerViewController: UIViewController {
     }
 
     private func finish(with selection: FilmSelection) {
-        // Hand the choice back before closing, so the editor is already showing the
-        // picked film as this screen animates away rather than after it.
         onPick?(selection)
         close()
     }
 
-    /// Closes the picker, whether or not the search bar is active.
-    ///
-    /// `self.dismiss` is not enough: while the search bar is active the search
-    /// controller is itself presented on top of this screen, and `dismiss` always
-    /// targets the topmost presented controller. That would tear down the search UI
-    /// and leave the picker sitting there — so selecting a film would appear to do
-    /// nothing. Dismissing from the presenter removes the search UI and the picker
-    /// together, in one animation.
+    /// Dismisses from the presenter, not `self`: while the search bar is active the
+    /// search controller is presented on top of this screen, so `self.dismiss` would
+    /// only tear that down and leave the picker up.
     private func close() {
         searchController.searchBar.resignFirstResponder()
         let presenter = presentingViewController ?? self
@@ -206,9 +192,7 @@ extension FilmPickerViewController: UISearchResultsUpdating {
 
 extension FilmPickerViewController: UITableViewDataSource, UITableViewDelegate {
 
-    /// Section 1 is the "add it by hand" escape hatch, shown as soon as there's a name
-    /// to add — including while results are still loading, so it never feels like a
-    /// consolation prize that only appears after a failure.
+    /// Section 1 is the hand-typed fallback, shown as soon as there's a name to add.
     func numberOfSections(in tableView: UITableView) -> Int { 2 }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -251,8 +235,7 @@ extension FilmPickerViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
-/// A search hit: poster, title, year and TMDB's own score, so the user can tell two
-/// films with the same name apart before committing.
+/// A search hit: poster, title, year and TMDB score, to tell same-named films apart.
 final class FilmResultCell: UITableViewCell {
 
     static let identifier = "FilmResultCell"
@@ -282,7 +265,7 @@ final class FilmResultCell: UITableViewCell {
         return label
     }()
 
-    /// Guards against a slow poster landing in a cell that has since been reused.
+    /// Guards against a slow poster landing in a reused cell.
     private var posterURL: URL?
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {

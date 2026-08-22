@@ -7,25 +7,17 @@
 
 import UIKit
 
-/// A block of text that shows a few lines, fades out at the cut, and opens to its full
-/// length when tapped.
+/// Text that collapses to `collapsedLineLimit` lines with a fade at the cut, and opens
+/// to full height on tap.
 ///
-/// Two things make the reveal read as a curtain opening downward rather than the box
-/// rearranging itself:
-///
-/// 1. The label is always laid out at its full height and pinned to the top only, so
-///    its frame never changes — what animates is how much of it this view lets you
-///    see. Pinning it top *and* bottom instead would let UILabel vertically centre the
-///    text inside the growing box, so the paragraph would drift up while the box grew
-///    down: movement in two directions at once.
-/// 2. The fade dissolves over the same beat as the reveal. Removing it outright on tap
-///    snapped the dimmed last line to full brightness while the box was still opening,
-///    which read as a flash at the start of the animation.
+/// The label is pinned to the top only and always laid out at full height; the reveal
+/// animates this view's height instead. Pinning it top *and* bottom would let UILabel
+/// centre the text in the growing box, so the paragraph would drift up while the box
+/// grew down.
 final class ExpandableTextLabel: UIView {
 
-    /// Invoked inside the expand/collapse animation. The owner should lay out whatever
-    /// this view sits in — this block is in a scroll view whose content height moves
-    /// with it, and only the owner can do that pass.
+    /// Called inside the expand/collapse animation; the owner should lay out its own
+    /// hierarchy here so the surrounding content moves in step.
     var onToggle: (() -> Void)?
 
     /// Lines shown while collapsed.
@@ -33,9 +25,7 @@ final class ExpandableTextLabel: UIView {
         didSet { setNeedsLayout() }
     }
 
-    /// What the text fades into. Defaults to the app background, which is the only
-    /// thing this ever sits on today. It's a plain constant rather than a theme value
-    /// — only `accent` follows the theme — so painting it is safe.
+    /// What the text fades into; must match the backing surface.
     var fadeColor: UIColor = .canvas {
         didSet { applyFadeColor() }
     }
@@ -46,8 +36,6 @@ final class ExpandableTextLabel: UIView {
         get { label.text }
         set {
             label.text = newValue
-            // A fresh title starts collapsed — carrying the previous one's expanded
-            // state over to a different film would be arbitrary.
             isExpanded = false
             accessibilityLabel = newValue
             measuredWidth = 0
@@ -70,17 +58,14 @@ final class ExpandableTextLabel: UIView {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .regular)
         label.textColor = .textPrimary
-        // Never changes: re-flowing the text on toggle would make it jump mid-animation
-        // on top of everything else moving.
+        // Fixed at 0: re-flowing on toggle would make the text jump mid-animation.
         label.numberOfLines = 0
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
-    /// Sits over the last line while collapsed. An overlay rather than a mask on the
-    /// label, because a mask is sized from the view's final bounds and would sit at the
-    /// wrong size for the whole animation — an overlay just rides the bottom edge down
-    /// and fades out on the way.
+    /// Overlay rather than a layer mask: a mask is sized from the final bounds and
+    /// would sit at the wrong size for the whole animation.
     private let fadeView: GradientView = {
         let view = GradientView()
         view.isUserInteractionEnabled = false
@@ -99,9 +84,7 @@ final class ExpandableTextLabel: UIView {
         min(ceil(label.font.lineHeight * CGFloat(collapsedLineLimit)), fullTextHeight)
     }
 
-    /// True when the text is genuinely longer than the collapsed limit. Everything —
-    /// the fade, the tap, the button trait — hangs off this, so a two-line synopsis
-    /// stays a plain paragraph with nothing to press.
+    /// Gates the fade, the tap and the button trait, so short text stays inert.
     private var isTruncatable: Bool { fullTextHeight > collapsedHeight + 1 }
 
     // MARK: - Init
@@ -109,8 +92,7 @@ final class ExpandableTextLabel: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        // The label overflows this view while collapsed; the overflow is the part being
-        // hidden, so it has to be clipped rather than drawn over the section below.
+        // The label overflows this view while collapsed.
         clipsToBounds = true
 
         addSubview(label)
@@ -147,8 +129,7 @@ final class ExpandableTextLabel: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
 
-        // Re-measure only when the available width actually changes: on rotation or a
-        // first pass, never on a frame of the reveal animation.
+        // Width-change only, so the reveal animation doesn't re-measure every frame.
         guard bounds.width > 0, bounds.width != measuredWidth else { return }
         measuredWidth = bounds.width
         fullTextHeight = ceil(
@@ -198,16 +179,15 @@ final class ExpandableTextLabel: UIView {
             delay: 0,
             options: [.curveEaseInOut, .allowUserInteraction]
         ) {
-            // Both on the same beat: the box opens and the fade lifts together, so
-            // there's no moment where the text brightens before it's uncovered.
+            // Same beat as the height change, so the text never brightens before it
+            // is uncovered.
             self.fadeView.alpha = self.shouldShowFade ? 1 : 0
             self.onToggle?()
         }
     }
 }
 
-/// A view whose backing layer is the gradient, so the gradient resizes with it instead
-/// of needing its frame kept in sync by hand.
+/// Backing layer is the gradient, so it resizes without manual frame bookkeeping.
 private final class GradientView: UIView {
     override class var layerClass: AnyClass { CAGradientLayer.self }
     var gradientLayer: CAGradientLayer { layer as! CAGradientLayer }

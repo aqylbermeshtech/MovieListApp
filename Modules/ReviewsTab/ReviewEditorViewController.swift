@@ -10,7 +10,6 @@ import UIKit
 /// Add a film, score it 1–10, write about it, save.
 final class ReviewEditorViewController: UIViewController {
 
-    /// Called after a successful save so the list can reload.
     var onSave: (() -> Void)?
 
     private let viewModel: ReviewEditorViewModel
@@ -104,8 +103,7 @@ final class ReviewEditorViewController: UIViewController {
         return textView
     }()
 
-    /// `UITextView` has no placeholder of its own, so one rides on top and hides as
-    /// soon as there's text.
+    /// `UITextView` has no placeholder, so one rides on top.
     private let reviewPlaceholderLabel: UILabel = {
         let label = UILabel()
         label.text = "What did you make of it?"
@@ -267,8 +265,7 @@ final class ReviewEditorViewController: UIViewController {
         }
     }
 
-    /// Mirrors Edit Profile: a disabled action stays readable rather than fading out,
-    /// so it reads as "not yet" instead of as a rendering fault.
+    /// Disabled stays readable rather than fading out, matching Edit Profile.
     private func updateSaveButtonState() {
         let isEnabled = viewModel.canSave
         saveButton.isEnabled = isEnabled
@@ -352,8 +349,6 @@ final class ReviewEditorViewController: UIViewController {
     @objc private func keyboardWillChangeFrame(_ notification: Notification) {
         guard let frame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
         else { return }
-        // The text view sits low on the screen, so without this the keyboard covers
-        // the field the user is typing into and the Save button under it.
         let overlap = max(0, view.bounds.maxY - view.convert(frame, from: nil).minY)
         scrollView.contentInset.bottom = overlap
         scrollView.verticalScrollIndicatorInsets.bottom = overlap

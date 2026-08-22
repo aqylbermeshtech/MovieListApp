@@ -33,16 +33,14 @@ final class MediaDetailsViewModel {
 
     // MARK: - The user's own review
 
-    /// Nil until `loadReview` has answered, and nil after it if they haven't
-    /// written one.
+    /// Nil until `loadReview` answers, and nil after it if there's no review.
     private(set) var existingReview: Review?
     var onReviewUpdate: (() -> Void)?
 
     func loadReview() {
         reviewStore.fetchReview(forTMDBID: media.id) { [weak self] result in
             guard let self = self else { return }
-            // A read failure here is not worth an alert on a screen the user came to
-            // for the film: the card just stays empty and they can still write one.
+            // A read failure just leaves the card empty; not worth an alert here.
             self.existingReview = (try? result.get()) ?? nil
             self.onReviewUpdate?()
         }
@@ -51,8 +49,7 @@ final class MediaDetailsViewModel {
     func saveReview(score: Int, text: String, completion: @escaping (Result<Void, Error>) -> Void) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Reusing the existing id and createdAt keeps this the same record the Reviews
-        // tab already lists, instead of adding a second entry for the same film.
+        // Same id and createdAt, so this updates the existing record in place.
         let review: Review
         if let existing = existingReview {
             review = Review(
